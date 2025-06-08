@@ -37,6 +37,8 @@ DEFAULT_CONFIG = {
     "default_redirect": "user@example.com",
     "sogo_visible": True,
     "access_password": "change_me_please",
+    "altcha_enabled": False,
+    "altcha_hmac_key": "head -c32 /dev/urandom | base64",
     "port": 5000
 }
 
@@ -185,6 +187,22 @@ def login():
     """Login page"""
     return send_from_directory('.', 'login.html')
 
+@app.route('/favicon.ico')
+def favicon():
+    """Serve favicon.ico"""
+    return send_from_directory('.', 'favicon.ico')
+
+@app.route('/favicon.svg')
+def favicon_svg():
+    """Serve favicon.svg"""
+    return send_from_directory('.', 'favicon.svg')
+
+@app.route('/altcha.js')
+def altcha_js():
+    """Serve altcha.js"""
+    return send_from_directory('.', 'altcha.js')
+
+
 @app.route('/api/create-alias', methods=['POST'])
 def create_alias():
     """Endpoint to create an alias"""
@@ -302,7 +320,8 @@ def get_config():
     
     return jsonify({
         'domain': config['domain'],
-        'default_redirect': config.get('default_redirect', 'user@example.com')
+        'default_redirect': config.get('default_redirect', 'user@example.com'),
+        'altcha_enabled': config.get('altcha_enabled', False)
     })
 
 @app.route('/api/auth', methods=['POST'])
