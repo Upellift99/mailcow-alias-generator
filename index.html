@@ -203,11 +203,7 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    showMessage(
-                        `<i class="bi bi-check-circle"></i> <strong>Alias created successfully!</strong><br>
-                        <code>${aliasEmail}</code> → <code>${redirectTo}</code>`, 
-                        'success'
-                    );
+                    showSuccessWithCopy(aliasEmail, redirectTo);
                     form.reset();
                     document.getElementById('redirectTo').value = appConfig.default_redirect;
                     // Generate new random number for next alias
@@ -242,6 +238,49 @@
 
         function showMessage(message, type) {
             messageDiv.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
+        }
+
+        function showSuccessWithCopy(aliasEmail, redirectTo) {
+            const copyId = 'copy-' + Date.now();
+            messageDiv.innerHTML = `
+                <div class="alert alert-success" role="alert">
+                    <i class="bi bi-check-circle"></i> <strong>Alias created successfully!</strong><br>
+                    <code>${aliasEmail}</code> → <code>${redirectTo}</code>
+                    <div class="mt-3">
+                        <div class="input-group input-group-lg">
+                            <input type="text" class="form-control form-control-lg" id="${copyId}" value="${aliasEmail}" readonly style="font-family: 'Courier New', monospace; font-weight: bold;">
+                            <button class="btn btn-outline-success btn-lg" type="button" onclick="copyToClipboard('${copyId}')">
+                                <i class="bi bi-clipboard"></i> Copy
+                            </button>
+                        </div>
+                        <small class="text-muted">Click "Copy" to copy the alias to your clipboard</small>
+                    </div>
+                </div>
+            `;
+        }
+
+        function copyToClipboard(inputId) {
+            const input = document.getElementById(inputId);
+            input.select();
+            input.setSelectionRange(0, 99999); // Pour mobile
+            
+            try {
+                document.execCommand('copy');
+                // Feedback visuel
+                const button = input.nextElementSibling;
+                const originalContent = button.innerHTML;
+                button.innerHTML = '<i class="bi bi-check"></i> Copied!';
+                button.classList.remove('btn-outline-success');
+                button.classList.add('btn-success');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalContent;
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-outline-success');
+                }, 2000);
+            } catch (err) {
+                console.error('Error copying to clipboard:', err);
+            }
         }
 
         // Initialize configuration and preview
