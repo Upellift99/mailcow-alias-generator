@@ -36,6 +36,7 @@ DEFAULT_CONFIG = {
     "domain": "example.com",
     "default_redirect": "user@example.com",
     "sogo_visible": True,
+    "access_password": "change_me_please",
     "port": 5000
 }
 
@@ -179,6 +180,11 @@ def index():
     """Home page"""
     return send_from_directory('.', 'index.html')
 
+@app.route('/login')
+def login():
+    """Login page"""
+    return send_from_directory('.', 'login.html')
+
 @app.route('/api/create-alias', methods=['POST'])
 def create_alias():
     """Endpoint to create an alias"""
@@ -298,6 +304,31 @@ def get_config():
         'domain': config['domain'],
         'default_redirect': config.get('default_redirect', 'user@example.com')
     })
+
+@app.route('/api/auth', methods=['POST'])
+def authenticate():
+    """Endpoint to authenticate with password"""
+    config = load_config()
+    
+    if not config:
+        return jsonify({'error': 'Invalid configuration'}), 500
+    
+    try:
+        data = request.get_json()
+        if not data or 'password' not in data:
+            return jsonify({'error': 'Password required'}), 400
+        
+        provided_password = data['password']
+        correct_password = config.get('access_password', 'change_me_please')
+        
+        if provided_password == correct_password:
+            return jsonify({'success': True, 'message': 'Authentication successful'})
+        else:
+            return jsonify({'error': 'Invalid password'}), 401
+            
+    except Exception as e:
+        logger.error(f"Authentication error: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
     # Load configuration to get port

@@ -4,5 +4,6 @@
   "domain": "example.com",
   "default_redirect": "user@example.com",
   "sogo_visible": true,
+  "access_password": "change_me_please",
   "port": 5000
 }
