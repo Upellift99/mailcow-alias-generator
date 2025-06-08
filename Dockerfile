@@ -22,8 +22,9 @@ COPY favicon.ico .
 COPY favicon.svg .
 COPY altcha.js .
 
-# Create non-root user first
-RUN useradd -m -u 1000 appuser
+# Create non-root user and set up permissions
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
 
 # Switch to appuser and create logs directory
 USER appuser
