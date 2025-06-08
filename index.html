@@ -83,8 +83,8 @@
 
                                 <div class="mb-3">
                                     <label for="redirectTo" class="form-label">Redirect to:</label>
-                                    <input type="email" class="form-control" id="redirectTo" name="redirectTo" 
-                                           value="user@example.com" required>
+                                    <input type="email" class="form-control" id="redirectTo" name="redirectTo"
+                                           value="" required>
                                 </div>
 
                                 <div class="preview-box p-3 mb-3">
@@ -118,6 +118,34 @@
         const submitText = document.getElementById('submitText');
         const submitSpinner = document.getElementById('submitSpinner');
         const messageDiv = document.getElementById('message');
+        const redirectToInput = document.getElementById('redirectTo');
+
+        // Configuration variables
+        let appConfig = {
+            domain: 'example.com',
+            default_redirect: 'user@example.com'
+        };
+
+        // Store the current random number for consistency
+        let currentRandomNumber = generateRandomNumber();
+
+        // Load configuration from API
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/config');
+                if (response.ok) {
+                    appConfig = await response.json();
+                    // Update the redirect field with the default value
+                    redirectToInput.value = appConfig.default_redirect;
+                    // Update the preview
+                    updatePreview();
+                } else {
+                    console.warn('Unable to load configuration, using defaults');
+                }
+            } catch (error) {
+                console.warn('Error loading configuration:', error);
+            }
+        }
 
         // Generate a random 4-digit number
         function generateRandomNumber() {
@@ -128,15 +156,18 @@
         function updatePreview() {
             const serviceName = serviceNameInput.value.toLowerCase().replace(/[^a-z0-9]/g, '');
             if (serviceName) {
-                const randomNum = generateRandomNumber();
-                previewEmail.textContent = `${serviceName}${randomNum}@example.com`;
+                previewEmail.textContent = `${serviceName}${currentRandomNumber}@${appConfig.domain}`;
             } else {
-                previewEmail.textContent = 'service1234@example.com';
+                previewEmail.textContent = `service${currentRandomNumber}@${appConfig.domain}`;
             }
         }
 
         // Listen for changes in the service name field
-        serviceNameInput.addEventListener('input', updatePreview);
+        serviceNameInput.addEventListener('input', function() {
+            // Generate a new random number when service name changes
+            currentRandomNumber = generateRandomNumber();
+            updatePreview();
+        });
 
         // Handle form submission
         form.addEventListener('submit', async (e) => {
@@ -150,9 +181,8 @@
                 return;
             }
 
-            // Generate final alias
-            const randomNum = generateRandomNumber();
-            const aliasEmail = `${serviceName}${randomNum}@example.com`;
+            // Use the same random number as shown in preview
+            const aliasEmail = `${serviceName}${currentRandomNumber}@${appConfig.domain}`;
 
             // Show loading state
             setLoadingState(true);
@@ -179,7 +209,9 @@
                         'success'
                     );
                     form.reset();
-                    document.getElementById('redirectTo').value = 'user@example.com';
+                    document.getElementById('redirectTo').value = appConfig.default_redirect;
+                    // Generate new random number for next alias
+                    currentRandomNumber = generateRandomNumber();
                     updatePreview();
                 } else {
                     showMessage(
@@ -212,8 +244,8 @@
             messageDiv.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
         }
 
-        // Initialize preview
-        updatePreview();
+        // Initialize configuration and preview
+        loadConfig();
     </script>
 </body>
 </html>

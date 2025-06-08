@@ -3,5 +3,6 @@
   "api_key": "YOUR_MAILCOW_API_KEY_HERE",
   "domain": "example.com",
   "default_redirect": "user@example.com",
+  "sogo_visible": true,
   "port": 5000
 }

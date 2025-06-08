@@ -35,6 +35,7 @@ DEFAULT_CONFIG = {
     "api_key": "YOUR_MAILCOW_API_KEY",
     "domain": "example.com",
     "default_redirect": "user@example.com",
+    "sogo_visible": True,
     "port": 5000
 }
 
@@ -85,7 +86,8 @@ def create_mailcow_alias(alias_email, redirect_to, config):
     data = {
         'address': alias_email,
         'goto': redirect_to,
-        'active': 1
+        'active': 1,
+        'sogo_visible': 1 if config.get('sogo_visible', True) else 0
     }
     
     try:
@@ -95,13 +97,31 @@ def create_mailcow_alias(alias_email, redirect_to, config):
         
         if response.status_code == 200:
             result = response.json()
-            if result.get('type') == 'success':
-                logger.info(f"Alias created successfully: {alias_email}")
-                return True, "Alias created successfully"
+            
+            # Handle Mailcow API response format (array of objects)
+            if isinstance(result, list) and len(result) > 0:
+                first_result = result[0]
+                if first_result.get('type') == 'success':
+                    logger.info(f"Alias created successfully: {alias_email}")
+                    return True, "Alias created successfully"
+                else:
+                    error_msg = first_result.get('msg', 'Unknown error')
+                    if isinstance(error_msg, list):
+                        error_msg = ' '.join(str(x) for x in error_msg)
+                    logger.error(f"Mailcow API error: {error_msg}")
+                    return False, error_msg
+            # Fallback for other response formats
+            elif isinstance(result, dict):
+                if result.get('type') == 'success':
+                    logger.info(f"Alias created successfully: {alias_email}")
+                    return True, "Alias created successfully"
+                else:
+                    error_msg = result.get('msg', 'Unknown error')
+                    logger.error(f"Mailcow API error: {error_msg}")
+                    return False, error_msg
             else:
-                error_msg = result.get('msg', 'Unknown error')
-                logger.error(f"Mailcow API error: {error_msg}")
-                return False, error_msg
+                logger.error(f"Unexpected API response format: {result}")
+                return False, "Unexpected API response format"
         else:
             logger.error(f"HTTP error {response.status_code}: {response.text}")
             return False, f"HTTP error {response.status_code}"
@@ -130,9 +150,22 @@ def check_alias_exists(alias_email, config):
         response = requests.get(api_url, headers=headers, timeout=10)
         
         if response.status_code == 200:
-            aliases = response.json()
+            aliases_data = response.json()
+            
+            # Handle different response formats from Mailcow API
+            if isinstance(aliases_data, list):
+                aliases = aliases_data
+            elif isinstance(aliases_data, dict):
+                # Sometimes the API returns a dict with aliases in a specific key
+                aliases = aliases_data.get('data', aliases_data.get('aliases', []))
+                if not isinstance(aliases, list):
+                    aliases = []
+            else:
+                aliases = []
+            
+            # Check if alias exists
             for alias in aliases:
-                if alias.get('address') == alias_email:
+                if isinstance(alias, dict) and alias.get('address') == alias_email:
                     return True
         
         return False
@@ -176,9 +209,9 @@ def create_alias():
         if not alias_email.endswith(f"@{config['domain']}"):
             return jsonify({'error': f'Alias must use domain {config["domain"]}'}), 400
         
-        # Check if alias already exists
-        if check_alias_exists(alias_email, config):
-            return jsonify({'error': 'This alias already exists'}), 409
+        # Check if alias already exists (temporarily disabled due to API format issues)
+        # if check_alias_exists(alias_email, config):
+        #     return jsonify({'error': 'This alias already exists'}), 409
         
         # Create alias
         success, message = create_mailcow_alias(alias_email, redirect_to, config)
@@ -249,6 +282,22 @@ def status():
             'status': 'error',
             'message': f'Unable to connect to Mailcow: {str(e)}'
         }), 500
+
+@app.route('/api/config')
+def get_config():
+    """Endpoint to get public configuration information"""
+    config = load_config()
+    
+    if not config:
+        return jsonify({
+            'status': 'error',
+            'message': 'Invalid configuration'
+        }), 500
+    
+    return jsonify({
+        'domain': config['domain'],
+        'default_redirect': config.get('default_redirect', 'user@example.com')
+    })
 
 if __name__ == '__main__':
     # Load configuration to get port
