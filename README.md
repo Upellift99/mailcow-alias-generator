@@ -54,13 +54,13 @@ Docker greatly simplifies installation and deployment. No Python installation re
 
 4. **Start with Docker Compose**:
    ```bash
-   docker-compose up -d
+   docker compose up -d
    ```
 
 5. **Check status**:
    ```bash
-   docker-compose ps
-   docker-compose logs -f
+   docker compose ps
+   docker compose logs -f
    ```
 
 6. **Access the application** at `http://localhost:5000`
@@ -239,11 +239,11 @@ cp config.sample.json config.json
 vi config.json  # or your preferred editor
 
 # 3. Start the application
-docker-compose up -d
+docker compose up -d
 
 # 4. Check status
-docker-compose ps
-docker-compose logs -f
+docker compose ps
+docker compose logs -f
 
 # 5. Access the application
 # http://localhost:5000
@@ -253,26 +253,26 @@ docker-compose logs -f
 
 ```bash
 # Start in background
-docker-compose up -d
+docker compose up -d
 
 # View logs in real-time
-docker-compose logs -f
+docker compose logs -f
 
 # Restart the application
-docker-compose restart
+docker compose restart
 
 # Stop the application
-docker-compose down
+docker compose down
 
 # Rebuild image (after changes)
-docker-compose build --no-cache
-docker-compose up -d
+docker compose build --no-cache
+docker compose up -d
 
 # View container status
-docker-compose ps
+docker compose ps
 
 # Access container shell (debug)
-docker-compose exec mailcow-alias-generator /bin/bash
+docker compose exec mailcow-alias-generator /bin/bash
 ```
 
 ### Docker Standalone Commands
@@ -424,8 +424,8 @@ docker cp mailcow-alias-generator:/app/logs ./backup-logs
 
 # Update application
 git pull
-docker-compose build --no-cache
-docker-compose up -d
+docker compose build --no-cache
+docker compose up -d
 
 # Clean unused images
 docker system prune -f
@@ -543,13 +543,13 @@ For production use, consider:
 **Container won't start**
 ```bash
 # Check startup logs
-docker-compose logs mailcow-alias-generator
+docker compose logs mailcow-alias-generator
 
 # Verify configuration
-docker-compose config
+docker compose config
 
 # Rebuild image
-docker-compose build --no-cache
+docker compose build --no-cache
 ```
 
 **Permission issues**
@@ -574,7 +574,7 @@ docker inspect mailcow-alias-generator | grep -A 10 Health
 **Network issues**
 ```bash
 # Test connectivity from container
-docker-compose exec mailcow-alias-generator curl -I https://your-mailcow.example.com
+docker compose exec mailcow-alias-generator curl -I https://your-mailcow.example.com
 
 # Check Docker networks
 docker network ls
@@ -586,10 +586,10 @@ docker network inspect mailcow-alias-generator_mailcow-alias-net
 #### Application Logs
 ```bash
 # Via Docker Compose
-docker-compose logs -f mailcow-alias-generator
+docker compose logs -f mailcow-alias-generator
 
 # Logs inside container
-docker-compose exec mailcow-alias-generator tail -f /app/logs/mailcow_alias.log
+docker compose exec mailcow-alias-generator tail -f /app/logs/mailcow_alias.log
 
 # Logs on host (if volume mounted)
 tail -f ./logs/mailcow_alias.log
@@ -606,7 +606,7 @@ tail -f ./logs/mailcow_alias.log
 curl http://localhost:5000/api/status
 
 # Test from inside container
-docker-compose exec mailcow-alias-generator curl http://localhost:5000/api/status
+docker compose exec mailcow-alias-generator curl http://localhost:5000/api/status
 
 # Create a test alias
 curl -X POST http://localhost:5000/api/create-alias \
@@ -627,7 +627,7 @@ environment:
 
 Then restart:
 ```bash
-docker-compose restart
+docker compose restart
 ```
 
 ## 📝 Usage Example
