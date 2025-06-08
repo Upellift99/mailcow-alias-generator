@@ -151,18 +151,18 @@ curl http://localhost:5000/api/status
 ```
 mailcow-alias-generator/
 ├── app.py                 # Main Flask server
-├── index.html            # Web interface (Bootstrap 5)
-├── Dockerfile            # Docker container definition
-├── docker-compose.yml    # Docker Compose configuration
-├── .dockerignore         # Docker ignore file
-├── config.json           # Configuration (to be created)
-├── config.sample.json    # Configuration example
-├── requirements.txt      # Python dependencies
-├── README.md             # This file
-├── logs/                 # Log directory (Docker volume)
-│   ├── mailcow_alias.log # Application logs
-│   └── alias_log.json    # Created aliases history
-└── start.sh              # Manual startup script
+├── index.html             # Web interface (Bootstrap 5)
+├── Dockerfile             # Docker container definition
+├── docker-compose.yml     # Docker Compose configuration
+├── .dockerignore          # Docker ignore file
+├── config.json            # Configuration (to be created)
+├── config.sample.json     # Configuration example
+├── requirements.txt       # Python dependencies
+├── README.md              # This file
+├── logs/                  # Log directory (Docker volume)
+│   ├── mailcow_alias.log  # Application logs
+│   └── alias_log.json     # Created aliases history
+└── start.sh               # Manual startup script
 ```
 
 ## ⚙️ Configuration Parameters
