@@ -18,11 +18,16 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py .
 COPY index.html .
 
-# Create logs directory and non-root user
+# Create non-root user first
+RUN useradd -m -u 1000 appuser
+
+# Create logs directory and set permissions
 RUN mkdir -p /app/logs && \
-    useradd -m -u 1000 appuser && \
+    touch /app/logs/mailcow_alias.log && \
+    touch /app/logs/alias_log.json && \
     chown -R appuser:appuser /app && \
-    chmod 755 /app/logs
+    chmod -R 755 /app/logs
+
 USER appuser
 
 # Expose port (default 5000, can be overridden)
