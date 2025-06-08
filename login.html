@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mailcow Alias Generator - Login</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="alternate icon" href="/favicon.ico">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -42,6 +44,7 @@
             height: 1rem;
         }
     </style>
+    <script async defer src="/altcha.js" type="module"></script>
 </head>
 <body>
     <div class="main-container">
@@ -63,7 +66,7 @@
                             <form id="loginForm">
                                 <div class="mb-3">
                                     <label for="password" class="form-label">Password:</label>
-                                    <input type="password" class="form-control" id="password" name="password" 
+                                    <input type="password" class="form-control" id="password" name="password"
                                            placeholder="Enter access password" required>
                                 </div>
 
@@ -128,7 +131,7 @@
                     sessionStorage.setItem('authenticated', 'true');
                     
                     showMessage(
-                        '<i class="bi bi-check-circle"></i> <strong>Access granted!</strong> Redirecting...', 
+                        '<i class="bi bi-check-circle"></i> <strong>Access granted!</strong> Redirecting...',
                         'success'
                     );
                     
@@ -138,7 +141,7 @@
                     }, 1500);
                 } else {
                     showMessage(
-                        `<i class="bi bi-exclamation-triangle"></i> <strong>Error:</strong> ${result.error}`, 
+                        `<i class="bi bi-exclamation-triangle"></i> <strong>Error:</strong> ${result.error}`,
                         'danger'
                     );
                     passwordInput.value = '';
@@ -146,7 +149,7 @@
                 }
             } catch (error) {
                 showMessage(
-                    `<i class="bi bi-wifi-off"></i> <strong>Connection error:</strong> ${error.message}`, 
+                    `<i class="bi bi-wifi-off"></i> <strong>Connection error:</strong> ${error.message}`,
                     'danger'
                 );
             } finally {
