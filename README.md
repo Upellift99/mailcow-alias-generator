@@ -11,6 +11,8 @@ A simple web tool to automate email alias creation via the Mailcow API. Perfect 
 - **Validation**: Format verification and alias existence checking
 - **Logs**: History of created aliases
 - **Flexible configuration**: Customizable parameters including port
+- **Security features**: Password protection and optional ALTCHA captcha integration
+- **ALTCHA captcha**: Privacy-focused, GDPR-compliant captcha system (optional)
 
 ## 🚀 Installation
 
@@ -19,6 +21,7 @@ A simple web tool to automate email alias creation via the Mailcow API. Perfect 
 - Python 3.7+ OR Docker
 - Access to a Mailcow instance with API enabled
 - Mailcow API key with write permissions
+- Python dependencies: Flask, requests, flask-cors, altcha (for ALTCHA captcha support)
 
 ### Option 1: Docker Installation (Recommended)
 
@@ -42,6 +45,9 @@ Docker greatly simplifies installation and deployment. No Python installation re
      "api_key": "YOUR_MAILCOW_API_KEY",
      "domain": "example.com",
      "default_redirect": "user@example.com",
+     "access_password": "your_secure_password",
+     "altcha_enabled": false,
+     "altcha_hmac_key": "your_base64_encoded_hmac_key",
      "port": 5000
    }
    ```
@@ -88,6 +94,9 @@ Docker greatly simplifies installation and deployment. No Python installation re
      "api_key": "YOUR_MAILCOW_API_KEY",
      "domain": "example.com",
      "default_redirect": "user@example.com",
+     "access_password": "your_secure_password",
+     "altcha_enabled": false,
+     "altcha_hmac_key": "your_base64_encoded_hmac_key",
      "port": 5000
    }
    ```
@@ -121,9 +130,11 @@ The application will be available at: `http://localhost:5000` (or the port speci
 ### Web Interface
 
 1. **Open your browser** to `http://localhost:5000` (or your configured port)
-2. **Enter the service name** (e.g., `supabase`, `github`, `netflix`)
-3. **Check the redirect address** (default: `user@example.com`)
-4. **Click "Create Alias"**
+2. **Enter the access password**
+3. **Complete the ALTCHA captcha** (if enabled)
+4. **Enter the service name** (e.g., `supabase`, `github`, `netflix`)
+5. **Check the redirect address** (default: `user@example.com`)
+6. **Click "Create Alias"**
 
 The alias will be automatically created with a format like: `supabase1234@example.com`
 
@@ -140,10 +151,31 @@ curl -X POST http://localhost:5000/api/create-alias \
   }'
 ```
 
-### Check Status
+### API Endpoints
 
+#### Check Status
 ```bash
 curl http://localhost:5000/api/status
+```
+
+#### Get Configuration
+```bash
+curl http://localhost:5000/api/config
+```
+
+#### Authentication (if password protection is enabled)
+```bash
+curl -X POST http://localhost:5000/api/auth \
+  -H "Content-Type: application/json" \
+  -d '{
+    "password": "your_access_password",
+    "altcha": "altcha_solution_if_enabled"
+  }'
+```
+
+#### Get ALTCHA Challenge (if ALTCHA is enabled)
+```bash
+curl http://localhost:5000/api/altcha/challenge
 ```
 
 ## 📁 File Structure
@@ -151,7 +183,9 @@ curl http://localhost:5000/api/status
 ```
 mailcow-alias-generator/
 ├── app.py                 # Main Flask server
-├── index.html             # Web interface (Bootstrap 5)
+├── index.html             # Main web interface (Bootstrap 5)
+├── login.html             # Authentication page
+├── altcha.js              # ALTCHA captcha library
 ├── Dockerfile             # Docker container definition
 ├── docker-compose.yml     # Docker Compose configuration
 ├── .dockerignore          # Docker ignore file
@@ -159,6 +193,8 @@ mailcow-alias-generator/
 ├── config.sample.json     # Configuration example
 ├── requirements.txt       # Python dependencies
 ├── README.md              # This file
+├── favicon.ico            # Application favicon
+├── favicon.svg            # Application favicon (SVG)
 ├── logs/                  # Log directory (Docker volume)
 │   ├── mailcow_alias.log  # Application logs
 │   └── alias_log.json     # Created aliases history
@@ -173,7 +209,12 @@ mailcow-alias-generator/
 | `api_key` | Your Mailcow API key | `YOUR_API_KEY_HERE` | Yes |
 | `domain` | Domain for creating aliases | `example.com` | Yes |
 | `default_redirect` | Default redirect email address | `user@example.com` | No |
+| `access_password` | Password to access the application | `your_secure_password` | Yes |
+| `altcha_enabled` | Enable ALTCHA captcha protection | `true` or `false` | No |
+| `altcha_hmac_key` | HMAC key for ALTCHA (base64 encoded) | `base64_encoded_key` | No* |
 | `port` | Port for the web interface | `5000` | No |
+
+*Required if `altcha_enabled` is `true`
 
 ## 🐳 Docker Usage
 
@@ -393,23 +434,71 @@ docker system prune -f
 docker stats mailcow-alias-generator
 ```
 
-## � Security
+## 🔒 Security
 
-### Recommendations
+### Authentication & Access Control
+
+The application includes built-in security features:
+
+- **Password Protection**: Access to the application is protected by a configurable password
+- **Session Management**: Authentication is managed via browser sessions
+- **ALTCHA Captcha**: Optional privacy-focused captcha system for additional protection
+
+### ALTCHA Captcha Integration
+
+[ALTCHA](https://altcha.org/) is a privacy-focused, GDPR-compliant alternative to traditional captchas that doesn't track users or require external services.
+
+#### Enabling ALTCHA
+
+1. **Generate an HMAC key**:
+   ```bash
+   # Generate a secure random key
+   head -c32 /dev/urandom | base64
+   ```
+
+2. **Configure in [`config.json`](config.json:1)**:
+   ```json
+   {
+     "altcha_enabled": true,
+     "altcha_hmac_key": "your_generated_base64_key_here"
+   }
+   ```
+
+3. **Restart the application** to apply changes
+
+#### ALTCHA Features
+
+- **Privacy-focused**: No tracking, no external dependencies
+- **GDPR compliant**: Respects user privacy
+- **Lightweight**: Minimal impact on page load times
+- **Accessible**: Works with screen readers and assistive technologies
+- **Self-hosted**: All verification happens on your server
+
+#### How ALTCHA Works
+
+1. Server generates a cryptographic challenge
+2. Client's browser solves the challenge using JavaScript
+3. Solution is verified server-side using HMAC
+4. No personal data is collected or transmitted
+
+### General Security Recommendations
 
 - **Protect your API key**: Never share it and store it securely
+- **Strong passwords**: Use a secure access password
 - **Network access**: Limit application access (firewall, VPN, etc.)
 - **HTTPS**: Use a reverse proxy with SSL in production
-- **Authentication**: Add an authentication layer if necessary
+- **Regular updates**: Keep dependencies and system updated
 
 ### Secure Deployment
 
 For production use, consider:
 
 1. **Nginx reverse proxy** with SSL
-2. **Basic authentication** or OAuth
-3. **IP restriction** if possible
-4. **Environment variables** for sensitive configuration
+2. **Strong access password** (minimum 12 characters)
+3. **Enable ALTCHA** for additional protection
+4. **IP restriction** if possible
+5. **Environment variables** for sensitive configuration
+6. **Regular security audits**
 
 ## 🐛 Troubleshooting
 
@@ -432,6 +521,22 @@ For production use, consider:
 
 **"This alias already exists"**
 - The generated alias already exists, try with another service name
+
+**"ALTCHA verification failed"**
+- Ensure `altcha_enabled` is set to `true` in configuration
+- Verify the `altcha_hmac_key` is properly configured
+- Check that the ALTCHA widget loads correctly in the browser
+- Ensure JavaScript is enabled in the browser
+
+**"ALTCHA not configured"**
+- Set `altcha_enabled: true` in [`config.json`](config.json:1)
+- Generate and configure a valid `altcha_hmac_key`
+- Restart the application after configuration changes
+
+**"Authentication required" or "Access denied"**
+- Check the `access_password` in your configuration
+- Ensure you're entering the correct password
+- Clear browser cache and cookies if issues persist
 
 ### Docker Troubleshooting
 
@@ -529,12 +634,21 @@ docker-compose restart
 
 1. **Sign up for a new service** (e.g., Supabase)
 2. **Open the interface**: `http://localhost:5000` (or your configured port)
-3. **Enter**: `supabase`
-4. **Generated preview**: `supabase6789@example.com`
-5. **Click**: "Create Alias"
-6. **Use the alias** for Supabase registration
+3. **Enter the access password**
+4. **Complete the ALTCHA captcha** (if enabled)
+5. **Enter**: `supabase`
+6. **Generated preview**: `supabase6789@example.com`
+7. **Click**: "Create Alias"
+8. **Use the alias** for Supabase registration
 
 Now, all emails from Supabase will arrive at `user@example.com` but you'll know they come from Supabase thanks to the alias!
+
+### Security Features in Action
+
+- **Password Protection**: Prevents unauthorized access to your alias generator
+- **ALTCHA Captcha**: Protects against automated abuse while respecting privacy
+- **Session Management**: Keeps you logged in during your session
+- **Secure Configuration**: Sensitive settings are stored server-side only
 
 ## 🤝 Support
 
