@@ -5,5 +5,7 @@
   "default_redirect": "user@example.com",
   "sogo_visible": true,
   "access_password": "change_me_please",
+  "altcha_enabled": false,
+  "altcha_hmac_key": "head -c32 /dev/urandom | base64",
   "port": 5000
 }
