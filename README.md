@@ -195,7 +195,7 @@ cd mailcow-alias-generator
 cp config.sample.json config.json
 
 # 2. Edit config.json with your settings
-nano config.json  # or your preferred editor
+vi config.json  # or your preferred editor
 
 # 3. Start the application
 docker-compose up -d
