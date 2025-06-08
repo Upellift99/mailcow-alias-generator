@@ -10,7 +10,8 @@ import requests
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
+from altcha import ChallengeOptions, create_challenge, verify_solution
 
 # Logging configuration
 log_dir = 'logs' if os.path.exists('logs') else '.'
@@ -177,6 +178,56 @@ def check_alias_exists(alias_email, config):
         logger.warning(f"Unable to check alias existence: {e}")
         return False
 
+def create_altcha_challenge(config):
+    """Créer un nouveau challenge ALTCHA"""
+    try:
+        altcha_hmac_key = config.get('altcha_hmac_key')
+        if not altcha_hmac_key:
+            logger.error("ALTCHA HMAC key not configured")
+            return None, "ALTCHA not configured"
+        
+        # Créer les options du challenge
+        options = ChallengeOptions(
+            expires=datetime.now() + timedelta(hours=1),
+            max_number=10000,  # Le nombre aléatoire maximum
+            hmac_key=altcha_hmac_key,
+        )
+        
+        # Créer le challenge
+        challenge = create_challenge(options)
+        logger.info("Challenge ALTCHA créé avec succès")
+        
+        return challenge, None
+        
+    except Exception as e:
+        logger.error(f"Erreur lors de la création du challenge ALTCHA: {e}")
+        return None, f"Erreur ALTCHA: {str(e)}"
+
+def verify_altcha_solution(payload, config, check_expires=True):
+    """Vérifier une solution ALTCHA"""
+    try:
+        altcha_hmac_key = config.get('altcha_hmac_key')
+        if not altcha_hmac_key:
+            logger.error("ALTCHA HMAC key not configured")
+            return False, "ALTCHA not configured"
+        
+        # Vérifier la solution
+        ok, err = verify_solution(payload, altcha_hmac_key, check_expires=check_expires)
+        
+        if err:
+            logger.warning(f"Erreur de vérification ALTCHA: {err}")
+            return False, str(err)
+        elif ok:
+            logger.info("Solution ALTCHA vérifiée avec succès")
+            return True, "Solution valide"
+        else:
+            logger.warning("Solution ALTCHA invalide")
+            return False, "Solution invalide"
+            
+    except Exception as e:
+        logger.error(f"Erreur lors de la vérification ALTCHA: {e}")
+        return False, f"Erreur ALTCHA: {str(e)}"
+
 @app.route('/')
 def index():
     """Home page"""
@@ -324,6 +375,35 @@ def get_config():
         'altcha_enabled': config.get('altcha_enabled', False)
     })
 
+@app.route('/api/altcha/challenge', methods=['GET'])
+def get_altcha_challenge():
+    """Endpoint pour obtenir un challenge ALTCHA"""
+    config = load_config()
+    
+    if not config:
+        return jsonify({'error': 'Invalid configuration'}), 500
+    
+    # Vérifier si ALTCHA est activé
+    if not config.get('altcha_enabled', False):
+        return jsonify({'error': 'ALTCHA not enabled'}), 400
+    
+    try:
+        challenge, error = create_altcha_challenge(config)
+        
+        if error:
+            return jsonify({'error': error}), 500
+        
+        return jsonify({
+            'algorithm': challenge.algorithm,
+            'challenge': challenge.challenge,
+            'salt': challenge.salt,
+            'signature': challenge.signature
+        })
+        
+    except Exception as e:
+        logger.error(f"Erreur lors de la création du challenge ALTCHA: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
 @app.route('/api/auth', methods=['POST'])
 def authenticate():
     """Endpoint to authenticate with password"""
@@ -336,6 +416,17 @@ def authenticate():
         data = request.get_json()
         if not data or 'password' not in data:
             return jsonify({'error': 'Password required'}), 400
+        
+        # Vérification ALTCHA si activée
+        if config.get('altcha_enabled', False):
+            altcha_payload = data.get('altcha')
+            if not altcha_payload:
+                return jsonify({'error': 'ALTCHA solution required'}), 400
+            
+            # Vérifier la solution ALTCHA
+            valid, error_msg = verify_altcha_solution(altcha_payload, config)
+            if not valid:
+                return jsonify({'error': f'ALTCHA verification failed: {error_msg}'}), 400
         
         provided_password = data['password']
         correct_password = config.get('access_password', 'change_me_please')
