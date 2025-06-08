@@ -70,10 +70,8 @@
                                         placeholder="Enter access password" required>
                                 </div>
 
-                                <div class="mb-3">
-                                    <altcha-widget
-                                        challengeurl="/api/altcha/challenge"
-                                    ></altcha-widget>
+                                <div class="mb-3" id="altchaContainer">
+                                    <!-- ALTCHA widget will be inserted here if enabled -->
                                 </div>
 
                                 <button type="submit" class="btn btn-gradient btn-lg w-100 text-white" id="submitBtn">
@@ -103,13 +101,46 @@
         const submitSpinner = document.getElementById('submitSpinner');
         const messageDiv = document.getElementById('message');
         const passwordInput = document.getElementById('password');
+        const altchaContainer = document.getElementById('altchaContainer');
+
+        // Load configuration and setup form
+        async function initializeForm() {
+            try {
+                const response = await fetch('/api/config');
+                const config = await response.json();
+                
+                // Create ALTCHA widget only if enabled
+                if (config.altcha_enabled) {
+                    const altchaWidget = document.createElement('altcha-widget');
+                    altchaWidget.setAttribute('challengeurl', '/api/altcha/challenge');
+                    altchaContainer.appendChild(altchaWidget);
+                    altchaContainer.style.display = 'block';
+                } else {
+                    // Hide container completely if ALTCHA is disabled
+                    altchaContainer.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading configuration:', error);
+                // If config fails to load, assume ALTCHA is disabled for better UX
+                altchaContainer.style.display = 'none';
+            }
+            
+            // Focus on password field after initialization
+            passwordInput.focus();
+        }
+
+        // Initialize form on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeForm();
+        });
 
         // Handle form submission
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const password = passwordInput.value;
-            const altcha = document.getElementsByName('altcha')[0]?.value || '';
+            const altchaElement = document.getElementsByName('altcha')[0];
+            const altcha = altchaElement?.value || '';
             
             if (!password) {
                 showMessage('Please enter a password.', 'danger');
@@ -180,8 +211,6 @@
             messageDiv.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
         }
 
-        // Focus on password field
-        passwordInput.focus();
     </script>
 </body>
 </html>
