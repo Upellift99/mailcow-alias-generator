@@ -14,7 +14,9 @@ from datetime import datetime, timedelta
 from altcha import ChallengeOptions, create_challenge, verify_solution
 
 # Logging configuration
-log_dir = 'logs' if os.path.exists('logs') else '.'
+log_dir = '/app/logs'
+# Ensure logs directory exists
+os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, 'mailcow_alias.log')
 
 logging.basicConfig(

@@ -21,7 +21,8 @@ COPY index.html .
 # Create logs directory and non-root user
 RUN mkdir -p /app/logs && \
     useradd -m -u 1000 appuser && \
-    chown -R appuser:appuser /app
+    chown -R appuser:appuser /app && \
+    chmod 755 /app/logs
 USER appuser
 
 # Expose port (default 5000, can be overridden)
