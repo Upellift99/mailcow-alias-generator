@@ -43,6 +43,18 @@
             width: 1rem;
             height: 1rem;
         }
+        
+        /* ALTCHA widget styling */
+        altcha-widget {
+            width: 100% !important;
+            display: block !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* Force styling on all internal widget elements */
+        altcha-widget * {
+            max-width: 100% !important;
+        }
     </style>
     <script async defer src="/altcha.js" type="module"></script>
 </head>
@@ -113,8 +125,20 @@
                 if (config.altcha_enabled) {
                     const altchaWidget = document.createElement('altcha-widget');
                     altchaWidget.setAttribute('challengeurl', '/api/altcha/challenge');
+                    
+                    // Force styling to occupy full width
+                    altchaWidget.style.width = '100%';
+                    altchaWidget.style.display = 'block';
+                    altchaWidget.style.boxSizing = 'border-box';
+                    
                     altchaContainer.appendChild(altchaWidget);
                     altchaContainer.style.display = 'block';
+                    
+                    // Apply styling after short delay to ensure widget is rendered
+                    setTimeout(() => {
+                        altchaWidget.style.width = '100%';
+                        altchaWidget.style.display = 'block';
+                    }, 100);
                 } else {
                     // Hide container completely if ALTCHA is disabled
                     altchaContainer.style.display = 'none';
