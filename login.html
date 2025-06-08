@@ -109,6 +109,7 @@
             e.preventDefault();
             
             const password = passwordInput.value;
+            const altcha = document.getElementsByName('altcha')[0]?.value || '';
             
             if (!password) {
                 showMessage('Please enter a password.', 'danger');
@@ -126,7 +127,8 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        password: password
+                        password: password,
+                        altcha: altcha
                     })
                 });
 
