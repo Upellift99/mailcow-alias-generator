@@ -1,0 +1,44 @@
+services:
+  mailcow-alias-generator:
+    build: .
+    container_name: mailcow-alias-generator
+    ports:
+      - "5000:5000"  # Host:Container port mapping
+    volumes:
+      - ./config.json:/app/config.json:ro  # Mount config file as read-only
+      - ./logs:/app/logs  # Mount logs directory for persistence
+    environment:
+      - PYTHONUNBUFFERED=1  # Ensure Python output is not buffered
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - mailcow-alias-net
+
+  # Optional: Add a reverse proxy for production use
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: mailcow-alias-nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./ssl:/etc/nginx/ssl:ro  # SSL certificates
+  #   depends_on:
+  #     - mailcow-alias-generator
+  #   restart: unless-stopped
+  #   networks:
+  #     - mailcow-alias-net
+
+networks:
+  mailcow-alias-net:
+    driver: bridge
+
+volumes:
+  logs:
+    driver: local
