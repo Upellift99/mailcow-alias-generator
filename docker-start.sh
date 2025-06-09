@@ -3,24 +3,12 @@
 # Docker startup script for Mailcow alias generator
 echo "🚀 Starting Mailcow Alias Generator with Gunicorn..."
 
-# Container always uses port 5000 internally
-DEFAULT_PORT=5000
+# Container always uses port 5000 internally - FORCED in Docker mode
+DOCKER_PORT=5000
 
-# Extract port from config.json if it exists, otherwise use default
-if [ -f "config.json" ] && command -v python3 &> /dev/null; then
-    PORT=$(python3 -c "
-import json
-import os
-try:
-    with open('config.json', 'r') as f:
-        config = json.load(f)
-    print(config.get('port', $DEFAULT_PORT))
-except:
-    print($DEFAULT_PORT)
-" 2>/dev/null || echo "$DEFAULT_PORT")
-else
-    PORT=${PORT:-$DEFAULT_PORT}
-fi
+# In Docker mode, we ALWAYS use port 5000 regardless of config.json
+# This ensures consistency with docker-compose.yml port mapping
+PORT=$DOCKER_PORT
 
 echo "🌐 Starting server on port $PORT"
 echo "📝 Make sure you have configured the config.json file"
