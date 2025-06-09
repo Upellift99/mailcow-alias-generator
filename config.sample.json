@@ -7,5 +7,6 @@
   "access_password": "change_me_please",
   "altcha_enabled": false,
   "altcha_hmac_key": "head -c32 /dev/urandom | base64",
-  "port": 5000
+  "port": 5000,
+  "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)"
 }
