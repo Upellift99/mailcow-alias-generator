@@ -48,7 +48,8 @@ Docker greatly simplifies installation and deployment. No Python installation re
      "access_password": "your_secure_password",
      "altcha_enabled": false,
      "altcha_hmac_key": "your_base64_encoded_hmac_key",
-     "port": 5000
+     "port": 5000,
+     "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)"
    }
    ```
 
@@ -97,7 +98,8 @@ Docker greatly simplifies installation and deployment. No Python installation re
      "access_password": "your_secure_password",
      "altcha_enabled": false,
      "altcha_hmac_key": "your_base64_encoded_hmac_key",
-     "port": 5000
+     "port": 5000,
+     "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)"
    }
    ```
 
