@@ -17,8 +17,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    networks:
-      - mailcow-alias-net
 
   # Optional: Add a reverse proxy for production use
   # nginx:
@@ -33,12 +31,6 @@ services:
   #   depends_on:
   #     - mailcow-alias-generator
   #   restart: unless-stopped
-  #   networks:
-  #     - mailcow-alias-net
-
-networks:
-  mailcow-alias-net:
-    driver: bridge
 
 volumes:
   logs:
