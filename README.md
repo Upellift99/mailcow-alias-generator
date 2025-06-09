@@ -11,6 +11,7 @@ A simple web tool to automate email alias creation via the Mailcow API. Perfect 
 - **Validation**: Format verification and alias existence checking
 - **Logs**: History of created aliases
 - **Flexible configuration**: Customizable parameters including port
+- **Multi-user support**: Multiple users with individual passwords and default redirect addresses
 - **Security features**: Password protection and optional ALTCHA captcha integration
 - **ALTCHA captcha**: Privacy-focused, GDPR-compliant captcha system (optional)
 
@@ -44,12 +45,24 @@ Docker greatly simplifies installation and deployment. No Python installation re
      "mailcow_url": "https://your-mailcow.example.com",
      "api_key": "YOUR_MAILCOW_API_KEY",
      "domain": "example.com",
-     "default_redirect": "user@example.com",
-     "access_password": "your_secure_password",
+     "sogo_visible": true,
      "altcha_enabled": false,
      "altcha_hmac_key": "your_base64_encoded_hmac_key",
      "port": 5000,
-     "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)"
+     "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)",
+     "_comment_users": "Multi-user configuration - each user has their own password and default redirect address",
+     "users": {
+       "admin": {
+         "password": "your_secure_password",
+         "default_redirect": "admin@example.com",
+         "description": "Administrator"
+       },
+       "user1": {
+         "password": "user1_password",
+         "default_redirect": "user1@example.com",
+         "description": "First user"
+       }
+     }
    }
    ```
 
@@ -94,12 +107,24 @@ Docker greatly simplifies installation and deployment. No Python installation re
      "mailcow_url": "https://your-mailcow.example.com",
      "api_key": "YOUR_MAILCOW_API_KEY",
      "domain": "example.com",
-     "default_redirect": "user@example.com",
-     "access_password": "your_secure_password",
+     "sogo_visible": true,
      "altcha_enabled": false,
      "altcha_hmac_key": "your_base64_encoded_hmac_key",
      "port": 5000,
-     "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)"
+     "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)",
+     "_comment_users": "Multi-user configuration - each user has their own password and default redirect address",
+     "users": {
+       "admin": {
+         "password": "your_secure_password",
+         "default_redirect": "admin@example.com",
+         "description": "Administrator"
+       },
+       "user1": {
+         "password": "user1_password",
+         "default_redirect": "user1@example.com",
+         "description": "First user"
+       }
+     }
    }
    ```
 
@@ -132,13 +157,22 @@ The application will be available at: `http://localhost:5000` (or the port speci
 ### Web Interface
 
 1. **Open your browser** to `http://localhost:5000` (or your configured port)
-2. **Enter the access password**
+2. **Enter your user password** (each user has their own password)
 3. **Complete the ALTCHA captcha** (if enabled)
 4. **Enter the service name** (e.g., `supabase`, `github`, `netflix`)
-5. **Check the redirect address** (default: `user@example.com`)
+5. **Check the redirect address** (automatically filled with your default address)
 6. **Click "Create Alias"**
 
 The alias will be automatically created with a format like: `supabase1234@example.com`
+
+### Multi-User Support
+
+The application supports multiple users, each with their own:
+- **Individual password**: Each user authenticates with their own password
+- **Default redirect address**: Automatically pre-filled for each user
+- **User description**: Displayed in the interface to identify the current user
+
+See the [Multi-User Configuration Guide](MULTI_USER_SETUP.md) for detailed setup instructions.
 
 ### REST API
 
@@ -193,6 +227,7 @@ mailcow-alias-generator/
 ├── .dockerignore          # Docker ignore file
 ├── config.json            # Configuration (to be created)
 ├── config.sample.json     # Configuration example
+├── MULTI_USER_SETUP.md    # Multi-user configuration guide
 ├── requirements.txt       # Python dependencies
 ├── README.md              # This file
 ├── favicon.ico            # Application favicon
@@ -210,13 +245,39 @@ mailcow-alias-generator/
 | `mailcow_url` | URL of your Mailcow instance | `https://mail.example.com` | Yes |
 | `api_key` | Your Mailcow API key | `YOUR_API_KEY_HERE` | Yes |
 | `domain` | Domain for creating aliases | `example.com` | Yes |
-| `default_redirect` | Default redirect email address | `user@example.com` | No |
-| `access_password` | Password to access the application | `your_secure_password` | Yes |
+| `sogo_visible` | Make aliases visible in SOGo | `true` or `false` | No |
 | `altcha_enabled` | Enable ALTCHA captcha protection | `true` or `false` | No |
 | `altcha_hmac_key` | HMAC key for ALTCHA (base64 encoded) | `base64_encoded_key` | No* |
 | `port` | Port for the web interface | `5000` | No |
+| `users` | Multi-user configuration object | See below | Yes |
 
 *Required if `altcha_enabled` is `true`
+
+### User Configuration
+
+Each user in the `users` object supports:
+
+| Parameter | Description | Example | Required |
+|-----------|-------------|---------|----------|
+| `password` | User's login password | `secure_password_123` | Yes |
+| `default_redirect` | Default email for alias redirection | `user@example.com` | Yes |
+| `description` | User description (shown in interface) | `Administrator` | No |
+
+Example user configuration:
+```json
+"users": {
+  "admin": {
+    "password": "admin_secure_password",
+    "default_redirect": "admin@example.com",
+    "description": "Administrator"
+  },
+  "john": {
+    "password": "john_password_123",
+    "default_redirect": "john@example.com",
+    "description": "John Doe"
+  }
+}
+```
 
 ## 🐳 Docker Usage
 
@@ -558,8 +619,9 @@ For production use, consider:
 - Restart the application after configuration changes
 
 **"Authentication required" or "Access denied"**
-- Check the `access_password` in your configuration
-- Ensure you're entering the correct password
+- Check the user passwords in the `users` section of your configuration
+- Ensure you're entering the correct password for your user
+- Verify that your user exists in the `users` configuration
 - Clear browser cache and cookies if issues persist
 
 ### Docker Troubleshooting
@@ -658,18 +720,26 @@ docker compose restart
 
 1. **Sign up for a new service** (e.g., Supabase)
 2. **Open the interface**: `http://localhost:5000` (or your configured port)
-3. **Enter the access password**
+3. **Enter your user password** (e.g., admin password)
 4. **Complete the ALTCHA captcha** (if enabled)
 5. **Enter**: `supabase`
 6. **Generated preview**: `supabase6789@example.com`
-7. **Click**: "Create Alias"
-8. **Use the alias** for Supabase registration
+7. **Verify redirect address**: Shows your personal default (e.g., `admin@example.com`)
+8. **Click**: "Create Alias"
+9. **Use the alias** for Supabase registration
 
-Now, all emails from Supabase will arrive at `user@example.com` but you'll know they come from Supabase thanks to the alias!
+Now, all emails from Supabase will arrive at your personal redirect address but you'll know they come from Supabase thanks to the alias!
+
+### Multi-User Features in Action
+
+- **Individual Authentication**: Each user has their own password
+- **Personal Redirect Addresses**: Each user sees their own default redirect
+- **User Identification**: Interface shows which user is currently logged in
+- **Isolated Experience**: Each user has their personalized settings
 
 ### Security Features in Action
 
-- **Password Protection**: Prevents unauthorized access to your alias generator
+- **Multi-User Password Protection**: Each user authenticates independently
 - **ALTCHA Captcha**: Protects against automated abuse while respecting privacy
 - **Session Management**: Keeps you logged in during your session
 - **Secure Configuration**: Sensitive settings are stored server-side only
