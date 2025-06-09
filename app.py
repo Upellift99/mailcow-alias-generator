@@ -51,12 +51,22 @@ DEFAULT_CONFIG = {
     "mailcow_url": "https://mail.example.com",
     "api_key": "YOUR_MAILCOW_API_KEY",
     "domain": "example.com",
-    "default_redirect": "user@example.com",
     "sogo_visible": True,
-    "access_password": "change_me_please",
     "altcha_enabled": False,
     "altcha_hmac_key": "head -c32 /dev/urandom | base64",
-    "port": 5000
+    "port": 5000,
+    "users": {
+        "user1": {
+            "password": "password_user1",
+            "default_redirect": "user1@example.com",
+            "description": "First user"
+        },
+        "user2": {
+            "password": "password_user2",
+            "default_redirect": "user2@example.com",
+            "description": "Second user"
+        }
+    }
 }
 
 def load_config():
@@ -244,6 +254,20 @@ def verify_altcha_solution(payload, config, check_expires=True):
         logger.error(f"Error verifying ALTCHA solution: {e}")
         return False, f"ALTCHA error: {str(e)}"
 
+def authenticate_user(password, config):
+    """Authenticate user and return user info if successful"""
+    # Check multi-user configuration
+    users = config.get('users', {})
+    for user_id, user_config in users.items():
+        if user_config.get('password') == password:
+            return {
+                'user_id': user_id,
+                'default_redirect': user_config.get('default_redirect', 'user@example.com'),
+                'description': user_config.get('description', f'User {user_id}')
+            }
+    
+    return None
+
 @app.route('/')
 def index():
     """Home page"""
@@ -385,10 +409,20 @@ def get_config():
             'message': 'Invalid configuration'
         }), 500
     
+    # Get user info from query parameter if provided (for authenticated requests)
+    user_id = request.args.get('user_id')
+    default_redirect = 'user@example.com'
+    
+    # If user_id is provided, get user-specific default redirect
+    if user_id and config.get('users', {}).get(user_id):
+        user_config = config['users'][user_id]
+        default_redirect = user_config.get('default_redirect', default_redirect)
+    
     return jsonify({
         'domain': config['domain'],
-        'default_redirect': config.get('default_redirect', 'user@example.com'),
-        'altcha_enabled': config.get('altcha_enabled', False)
+        'default_redirect': default_redirect,
+        'altcha_enabled': config.get('altcha_enabled', False),
+        'multi_user_enabled': bool(config.get('users'))
     })
 
 @app.route('/api/altcha/challenge', methods=['GET'])
@@ -445,11 +479,23 @@ def authenticate():
                 return jsonify({'error': f'ALTCHA verification failed: {error_msg}'}), 400
         
         provided_password = data['password']
-        correct_password = config.get('access_password', 'change_me_please')
         
-        if provided_password == correct_password:
-            return jsonify({'success': True, 'message': 'Authentication successful'})
+        # Authenticate user with new multi-user system
+        user_info = authenticate_user(provided_password, config)
+        
+        if user_info:
+            logger.info(f"User authenticated: {user_info['user_id']} ({user_info['description']})")
+            return jsonify({
+                'success': True,
+                'message': 'Authentication successful',
+                'user': {
+                    'id': user_info['user_id'],
+                    'default_redirect': user_info['default_redirect'],
+                    'description': user_info['description']
+                }
+            })
         else:
+            logger.warning(f"Failed authentication attempt")
             return jsonify({'error': 'Invalid password'}), 401
             
     except Exception as e:

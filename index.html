@@ -65,7 +65,8 @@
                 <div class="col-md-8 col-lg-7 col-xl-6">
                     <div class="card">
                         <div class="card-body p-4">
-                            <div class="d-flex justify-content-end mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div id="userInfo" class="text-muted small"></div>
                                 <button type="button" class="btn btn-outline-secondary btn-sm" onclick="logout()">
                                     <i class="bi bi-box-arrow-right"></i> Logout
                                 </button>
@@ -123,6 +124,17 @@
             window.location.href = '/login';
         }
         
+        // Get user info from session storage
+        let currentUser = null;
+        try {
+            const userInfo = sessionStorage.getItem('user_info');
+            if (userInfo) {
+                currentUser = JSON.parse(userInfo);
+            }
+        } catch (error) {
+            console.warn('Error parsing user info:', error);
+        }
+        
         const serviceNameInput = document.getElementById('serviceName');
         const previewEmail = document.getElementById('previewEmail');
         const form = document.getElementById('aliasForm');
@@ -141,13 +153,29 @@
         // Store the current random number for consistency
         let currentRandomNumber = generateRandomNumber();
 
+        // Update user info display
+        function updateUserInfo() {
+            const userInfoDiv = document.getElementById('userInfo');
+            if (currentUser && currentUser.description) {
+                userInfoDiv.innerHTML = `<i class="bi bi-person-circle"></i> ${currentUser.description}`;
+            } else {
+                userInfoDiv.innerHTML = `<i class="bi bi-person-circle"></i> Connected user`;
+            }
+        }
+
         // Load configuration from API
         async function loadConfig() {
             try {
-                const response = await fetch('/api/config');
+                // Include user_id in request if available
+                let configUrl = '/api/config';
+                if (currentUser && currentUser.id) {
+                    configUrl += `?user_id=${encodeURIComponent(currentUser.id)}`;
+                }
+                
+                const response = await fetch(configUrl);
                 if (response.ok) {
                     appConfig = await response.json();
-                    // Update the redirect field with the default value
+                    // Update the redirect field with the user-specific default value
                     redirectToInput.value = appConfig.default_redirect;
                     // Update the preview
                     updatePreview();
@@ -297,10 +325,12 @@
 
         function logout() {
             sessionStorage.removeItem('authenticated');
+            sessionStorage.removeItem('user_info');
             window.location.href = '/login';
         }
 
-        // Initialize configuration and preview
+        // Initialize configuration, preview and user info
+        updateUserInfo();
         loadConfig();
     </script>
 </body>

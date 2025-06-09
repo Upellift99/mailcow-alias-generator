@@ -190,11 +190,15 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    // Store authentication in sessionStorage
+                    // Store authentication and user info in sessionStorage
                     sessionStorage.setItem('authenticated', 'true');
+                    if (result.user) {
+                        sessionStorage.setItem('user_info', JSON.stringify(result.user));
+                    }
                     
+                    const userDesc = result.user ? ` (${result.user.description})` : '';
                     showMessage(
-                        '<i class="bi bi-check-circle"></i> <strong>Access granted!</strong> Redirecting...',
+                        `<i class="bi bi-check-circle"></i> <strong>Access granted!</strong>${userDesc} Redirecting...`,
                         'success'
                     );
                     

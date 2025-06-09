@@ -2,11 +2,22 @@
   "mailcow_url": "https://mail.example.com",
   "api_key": "YOUR_MAILCOW_API_KEY_HERE",
   "domain": "example.com",
-  "default_redirect": "user@example.com",
   "sogo_visible": true,
-  "access_password": "change_me_please",
   "altcha_enabled": false,
   "altcha_hmac_key": "head -c32 /dev/urandom | base64",
   "port": 5000,
-  "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)"
+  "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)",
+  "_comment_users": "Multi-user configuration - each user has their own password and default redirect address",
+  "users": {
+    "user1": {
+      "password": "password_user1",
+      "default_redirect": "user1@example.com",
+      "description": "First user"
+    },
+    "user2": {
+      "password": "password_user2",
+      "default_redirect": "user2@example.com",
+      "description": "Second user"
+    }
+  }
 }
