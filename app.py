@@ -456,4 +456,5 @@ if __name__ == '__main__':
     print("📝 Make sure you have configured the config.json file")
     print(f"🌐 Interface available at http://localhost:{port}")
     
-    app.run(debug=True, host='0.0.0.0', port=port)
+    # Use debug=False for production-like behavior
+    app.run(debug=False, host='0.0.0.0', port=port)

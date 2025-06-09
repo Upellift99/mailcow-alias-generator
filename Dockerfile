@@ -21,6 +21,7 @@ COPY login.html .
 COPY favicon.ico .
 COPY favicon.svg .
 COPY altcha.js .
+COPY docker-start.sh .
 
 # Create non-root user and set up permissions
 RUN useradd -m -u 1000 appuser && \
@@ -30,7 +31,8 @@ RUN useradd -m -u 1000 appuser && \
 USER appuser
 RUN mkdir -p /app/logs && \
     touch /app/logs/mailcow_alias.log && \
-    touch /app/logs/alias_log.json
+    touch /app/logs/alias_log.json && \
+    chmod +x docker-start.sh
 
 # Expose port (default 5000, can be overridden)
 EXPOSE 5000
@@ -39,5 +41,5 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/api/status || exit 1
 
-# Run the application
-CMD ["python", "app.py"]
+# Run the application with our custom startup script
+CMD ["./docker-start.sh"]
