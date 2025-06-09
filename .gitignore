@@ -1,5 +1,8 @@
-# Configuration sensible
+# Sensitive configuration
 config.json
+
+# Environment (uncomment the line below if you want to ignore .env)
+# .env
 
 # Logs
 *.log

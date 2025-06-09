@@ -39,12 +39,15 @@ RUN mkdir -p /app/logs && \
 # Set environment variable to indicate Docker container
 ENV DOCKER_CONTAINER=true
 
-# Expose port (default 5000, can be overridden)
-EXPOSE 5000
+# Set default port (can be overridden)
+ENV PORT=5000
+
+# Expose port (configurable via environment variable)
+EXPOSE $PORT
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/api/status || exit 1
+    CMD curl -f http://localhost:${PORT}/api/status || exit 1
 
 # Run the application with our custom startup script
 CMD ["./docker-start.sh"]
