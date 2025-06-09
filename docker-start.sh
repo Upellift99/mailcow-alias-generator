@@ -3,8 +3,8 @@
 # Docker startup script for Mailcow alias generator
 echo "🚀 Starting Mailcow Alias Generator with Gunicorn..."
 
-# Set default port from environment or fallback
-DEFAULT_PORT=${CONTAINER_PORT:-5000}
+# Container always uses port 5000 internally
+DEFAULT_PORT=5000
 
 # Extract port from config.json if it exists, otherwise use default
 if [ -f "config.json" ] && command -v python3 &> /dev/null; then
@@ -19,7 +19,7 @@ except:
     print($DEFAULT_PORT)
 " 2>/dev/null || echo "$DEFAULT_PORT")
 else
-    PORT=${CONTAINER_PORT:-$DEFAULT_PORT}
+    PORT=${PORT:-$DEFAULT_PORT}
 fi
 
 echo "🌐 Starting server on port $PORT"
