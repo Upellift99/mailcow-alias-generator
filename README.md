@@ -305,7 +305,27 @@ docker rm mailcow-alias-generator
 
 #### Environment Variables
 
-The container supports the following environment variables:
+You can customize Docker deployment using environment variables. Copy the example file and modify as needed:
+
+```bash
+cp env.example .env
+```
+
+The [`env.example`](env.example:1) file contains:
+- `HOST_PORT`: External port for accessing the application (default: 5000)
+- `PYTHONUNBUFFERED`: Optional Python output buffering control
+
+Example `.env` file:
+```bash
+# Docker deployment port configuration
+# Host port (accessible from outside) - change this to use a different external port
+HOST_PORT=8080
+
+# Optional variables for advanced configuration
+PYTHONUNBUFFERED=1
+```
+
+The container also supports additional environment variables:
 
 ```bash
 # In docker-compose.yml
@@ -313,6 +333,8 @@ environment:
   - PYTHONUNBUFFERED=1  # Unbuffered Python output
   - FLASK_ENV=production  # Production mode
 ```
+
+> **Note**: The container always uses port 5000 internally. Only change `HOST_PORT` in the `.env` file to expose the service on a different external port.
 
 #### Volumes
 
