@@ -27,11 +27,13 @@ COPY docker-start.sh .
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /app
 
-# Switch to appuser and create logs directory
+# Switch to appuser and create logs directory with proper permissions
 USER appuser
 RUN mkdir -p /app/logs && \
     touch /app/logs/mailcow_alias.log && \
     touch /app/logs/alias_log.json && \
+    chmod 664 /app/logs/mailcow_alias.log && \
+    chmod 664 /app/logs/alias_log.json && \
     chmod +x docker-start.sh
 
 # Expose port (default 5000, can be overridden)
