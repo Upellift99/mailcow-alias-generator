@@ -36,6 +36,9 @@ RUN mkdir -p /app/logs && \
     chmod 664 /app/logs/alias_log.json && \
     chmod +x docker-start.sh
 
+# Set environment variable to indicate Docker container
+ENV DOCKER_CONTAINER=true
+
 # Expose port (default 5000, can be overridden)
 EXPOSE 5000
 

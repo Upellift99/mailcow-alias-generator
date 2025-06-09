@@ -14,24 +14,33 @@ from datetime import datetime, timedelta
 from altcha import ChallengeOptions, create_challenge, verify_solution
 
 # Logging configuration
-log_dir = '/app/logs'
-log_file = os.path.join(log_dir, 'mailcow_alias.log')
-
-# Try to create file handler, fallback to console only if it fails
-handlers = [logging.StreamHandler()]
-try:
-    # Ensure logs directory exists
-    os.makedirs(log_dir, exist_ok=True)
-    handlers.append(logging.FileHandler(log_file))
-except (PermissionError, OSError) as e:
-    print(f"Warning: Cannot write to log file {log_file}: {e}")
-    print("Logging will only be available in console.")
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=handlers
-)
+# In Docker, we only log to console (best practice for containers)
+if os.getenv('DOCKER_CONTAINER'):
+    # Docker environment - console logging only
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[logging.StreamHandler()]
+    )
+    log_dir = '/app/logs'  # For compatibility with log saving functions
+else:
+    # Local environment - try file logging with fallback
+    log_dir = '/app/logs'
+    log_file = os.path.join(log_dir, 'mailcow_alias.log')
+    
+    handlers = [logging.StreamHandler()]
+    try:
+        os.makedirs(log_dir, exist_ok=True)
+        handlers.append(logging.FileHandler(log_file))
+    except (PermissionError, OSError) as e:
+        print(f"Warning: Cannot write to log file {log_file}: {e}")
+        print("Logging will only be available in console.")
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=handlers
+    )
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
