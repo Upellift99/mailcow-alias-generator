@@ -118,6 +118,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         // Check authentication on page load
         if (!sessionStorage.getItem('authenticated')) {
@@ -282,6 +283,7 @@
 
         function showSuccessWithCopy(aliasEmail, redirectTo) {
             const copyId = 'copy-' + Date.now();
+            const qrId = 'qrcode-' + Date.now();
             messageDiv.innerHTML = `
                 <div class="alert alert-success" role="alert">
                     <i class="bi bi-check-circle"></i> <strong>Alias created successfully!</strong><br>
@@ -295,8 +297,25 @@
                         </div>
                         <small class="text-muted">Click "Copy" to copy the alias to your clipboard</small>
                     </div>
+                    <div class="mt-4 text-center">
+                        <div class="fw-semibold mb-2"><i class="bi bi-qr-code"></i> QR Code</div>
+                        <div id="${qrId}" class="d-inline-block p-3" style="background: white; border-radius: 8px;"></div>
+                        <div class="text-muted small mt-2">Scan to copy the email address</div>
+                    </div>
                 </div>
             `;
+
+            // Generate QR code
+            setTimeout(() => {
+                new QRCode(document.getElementById(qrId), {
+                    text: aliasEmail,
+                    width: 200,
+                    height: 200,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }, 100);
         }
 
         function copyToClipboard(inputId) {
