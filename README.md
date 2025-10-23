@@ -83,6 +83,13 @@ Docker greatly simplifies installation and deployment. No Python installation re
 
 6. **Access the application** at `http://localhost:5000`
 
+> 💡 **Tip**: After updating the code (git pull), rebuild the image to apply changes:
+>    ```bash
+>    docker compose down
+>    docker compose build --no-cache
+>    docker compose up -d
+>    ```
+
 > 💡 **Tip**: Check the [🐳 Docker Usage](#-docker-usage) section for advanced commands and production configuration.
 
 ### Option 2: Manual Installation
@@ -662,6 +669,17 @@ For production use, consider:
 - Ensure you're entering the correct password for your user
 - Verify that your user exists in the `users` configuration
 - Clear browser cache and cookies if issues persist
+
+**"Parameter 'domain' missing" or "Parameter 'domains' missing"**
+- This usually happens after a code update when the Docker container is using an old version
+- Solution: Rebuild the Docker image to apply the latest code changes
+  ```bash
+  docker compose down
+  docker compose build --no-cache
+  docker compose up -d
+  ```
+- Ensure your `config.json` has either `domain` (legacy) or `domains` (new format)
+- The new code automatically converts the old `domain` format to the new `domains` format
 
 ### Docker Troubleshooting
 
