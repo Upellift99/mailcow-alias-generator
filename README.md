@@ -7,6 +7,7 @@ A simple web tool to automate email alias creation via the Mailcow API. Perfect 
 - **Modern web interface**: Bootstrap 5-powered responsive design
 - **Intuitive user experience**: Simple and elegant page for creating aliases
 - **Automatic generation**: Automatically adds a random 4-digit number
+- **Multiple domains support**: Choose from multiple configured domains with dropdown selector
 - **Mailcow API integration**: Direct creation via Mailcow API
 - **Validation**: Format verification and alias existence checking
 - **Logs**: History of created aliases
@@ -44,12 +45,15 @@ Docker greatly simplifies installation and deployment. No Python installation re
    {
      "mailcow_url": "https://your-mailcow.example.com",
      "api_key": "YOUR_MAILCOW_API_KEY",
-     "domain": "example.com",
+     "domains": ["example.com", "example2.com"],
+     "default_domain": "example.com",
      "sogo_visible": true,
      "altcha_enabled": false,
      "altcha_hmac_key": "your_base64_encoded_hmac_key",
      "port": 5000,
      "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)",
+     "_comment_domains": "List of available domains - users can choose from this list",
+     "_comment_default_domain": "Default domain selected in the dropdown (must be in the domains list)",
      "_comment_users": "Multi-user configuration - each user has their own password and default redirect address",
      "users": {
        "admin": {
@@ -106,12 +110,15 @@ Docker greatly simplifies installation and deployment. No Python installation re
    {
      "mailcow_url": "https://your-mailcow.example.com",
      "api_key": "YOUR_MAILCOW_API_KEY",
-     "domain": "example.com",
+     "domains": ["example.com", "example2.com"],
+     "default_domain": "example.com",
      "sogo_visible": true,
      "altcha_enabled": false,
      "altcha_hmac_key": "your_base64_encoded_hmac_key",
      "port": 5000,
      "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)",
+     "_comment_domains": "List of available domains - users can choose from this list",
+     "_comment_default_domain": "Default domain selected in the dropdown (must be in the domains list)",
      "_comment_users": "Multi-user configuration - each user has their own password and default redirect address",
      "users": {
        "admin": {
@@ -160,10 +167,38 @@ The application will be available at: `http://localhost:5000` (or the port speci
 2. **Enter your user password** (each user has their own password)
 3. **Complete the ALTCHA captcha** (if enabled)
 4. **Enter the service name** (e.g., `supabase`, `github`, `netflix`)
-5. **Check the redirect address** (automatically filled with your default address)
-6. **Click "Create Alias"**
+5. **Select a domain** from the dropdown list (default domain is pre-selected)
+6. **Check the redirect address** (automatically filled with your default address)
+7. **Click "Create Alias"**
 
 The alias will be automatically created with a format like: `supabase1234@example.com`
+
+### Multiple Domains Support
+
+The application supports multiple domains, allowing you to create aliases on different domains:
+- **Domain selection**: Choose from a dropdown list of configured domains
+- **Default domain**: Pre-selected domain when creating a new alias
+- **Dynamic preview**: Alias preview updates based on selected domain
+- **Flexible configuration**: Add as many domains as you need
+
+#### Configuring Multiple Domains
+
+In your `config.json`, use the `domains` array:
+
+```json
+{
+  "domains": ["example.com", "example2.com", "example3.org"],
+  "default_domain": "example.com"
+}
+```
+
+**Note**: For backward compatibility, the old single `domain` format is still supported and will be automatically converted:
+
+```json
+{
+  "domain": "example.com"  // Will be converted to domains: ["example.com"]
+}
+```
 
 ### Multi-User Support
 
@@ -244,7 +279,9 @@ mailcow-alias-generator/
 |-----------|-------------|---------|----------|
 | `mailcow_url` | URL of your Mailcow instance | `https://mail.example.com` | Yes |
 | `api_key` | Your Mailcow API key | `YOUR_API_KEY_HERE` | Yes |
-| `domain` | Domain for creating aliases | `example.com` | Yes |
+| `domains` | List of available domains for aliases | `["example.com", "example2.com"]` | Yes |
+| `default_domain` | Default domain pre-selected in dropdown | `"example.com"` | No** |
+| `domain` | Legacy: Single domain (backward compatible) | `"example.com"` | No*** |
 | `sogo_visible` | Make aliases visible in SOGo | `true` or `false` | No |
 | `altcha_enabled` | Enable ALTCHA captcha protection | `true` or `false` | No |
 | `altcha_hmac_key` | HMAC key for ALTCHA (base64 encoded) | `base64_encoded_key` | No* |
@@ -252,6 +289,8 @@ mailcow-alias-generator/
 | `users` | Multi-user configuration object | See below | Yes |
 
 *Required if `altcha_enabled` is `true`
+**If not specified, the first domain in the `domains` list will be used
+***Legacy format: if `domain` is provided without `domains`, it will be automatically converted to the new format
 
 ### User Configuration
 
@@ -723,10 +762,11 @@ docker compose restart
 3. **Enter your user password** (e.g., admin password)
 4. **Complete the ALTCHA captcha** (if enabled)
 5. **Enter**: `supabase`
-6. **Generated preview**: `supabase6789@example.com`
-7. **Verify redirect address**: Shows your personal default (e.g., `admin@example.com`)
-8. **Click**: "Create Alias"
-9. **Use the alias** for Supabase registration
+6. **Select a domain**: Choose from the dropdown (e.g., `example.com` or `example2.com`)
+7. **Generated preview**: `supabase6789@example.com` (updates based on selected domain)
+8. **Verify redirect address**: Shows your personal default (e.g., `admin@example.com`)
+9. **Click**: "Create Alias"
+10. **Use the alias** for Supabase registration
 
 Now, all emails from Supabase will arrive at your personal redirect address but you'll know they come from Supabase thanks to the alias!
 

@@ -50,7 +50,8 @@ CORS(app)
 DEFAULT_CONFIG = {
     "mailcow_url": "https://mail.example.com",
     "api_key": "YOUR_MAILCOW_API_KEY",
-    "domain": "example.com",
+    "domains": ["example.com", "example2.com"],
+    "default_domain": "example.com",
     "sogo_visible": True,
     "altcha_enabled": False,
     "altcha_hmac_key": "head -c32 /dev/urandom | base64",
@@ -85,12 +86,27 @@ def load_config():
         with open(config_file, 'r', encoding='utf-8') as f:
             config = json.load(f)
         
+        # Support both old 'domain' format and new 'domains' format
+        if 'domain' in config and 'domains' not in config:
+            # Convert old single domain format to new format
+            config['domains'] = [config['domain']]
+            config['default_domain'] = config['domain']
+
         # Check required parameters
-        required_keys = ['mailcow_url', 'api_key', 'domain']
+        required_keys = ['mailcow_url', 'api_key']
         for key in required_keys:
-            if not config.get(key) or config[key] == DEFAULT_CONFIG[key]:
+            if not config.get(key) or config[key] == DEFAULT_CONFIG.get(key):
                 logger.error(f"Parameter '{key}' missing or not configured in config.json")
                 return None
+
+        # Check domains configuration
+        if not config.get('domains') or not isinstance(config['domains'], list) or len(config['domains']) == 0:
+            logger.error("Parameter 'domains' missing or not configured properly in config.json")
+            return None
+
+        # Set default_domain if not specified
+        if not config.get('default_domain'):
+            config['default_domain'] = config['domains'][0]
         
         return config
     except json.JSONDecodeError as e:
@@ -311,18 +327,21 @@ def create_alias():
         
         alias_email = data.get('alias', '').strip().lower()
         redirect_to = data.get('redirectTo', '').strip().lower()
-        
+
         # Data validation
         if not alias_email or not redirect_to:
             return jsonify({'error': 'Alias and redirect address required'}), 400
-        
+
         # Check email format
         if '@' not in alias_email or '@' not in redirect_to:
             return jsonify({'error': 'Invalid email format'}), 400
-        
-        # Check that alias uses the correct domain
-        if not alias_email.endswith(f"@{config['domain']}"):
-            return jsonify({'error': f'Alias must use domain {config["domain"]}'}), 400
+
+        # Check that alias uses one of the allowed domains
+        allowed_domains = config.get('domains', [])
+        alias_domain = alias_email.split('@')[1] if '@' in alias_email else ''
+        if not any(alias_email.endswith(f"@{domain}") for domain in allowed_domains):
+            domains_list = ', '.join(allowed_domains)
+            return jsonify({'error': f'Alias must use one of the allowed domains: {domains_list}'}), 400
         
         # Check if alias already exists (temporarily disabled due to API format issues)
         # if check_alias_exists(alias_email, config):
@@ -383,7 +402,8 @@ def status():
             return jsonify({
                 'status': 'ok',
                 'mailcow_url': config['mailcow_url'],
-                'domain': config['domain'],
+                'domains': config.get('domains', []),
+                'default_domain': config.get('default_domain'),
                 'connection': 'success'
             })
         else:
@@ -419,7 +439,8 @@ def get_config():
         default_redirect = user_config.get('default_redirect', default_redirect)
     
     return jsonify({
-        'domain': config['domain'],
+        'domains': config.get('domains', [config.get('domain', 'example.com')]),
+        'default_domain': config.get('default_domain', config.get('domains', ['example.com'])[0]),
         'default_redirect': default_redirect,
         'altcha_enabled': config.get('altcha_enabled', False),
         'multi_user_enabled': bool(config.get('users'))

@@ -85,8 +85,15 @@
                             <form id="aliasForm">
                                 <div class="mb-3">
                                     <label for="serviceName" class="form-label">Service name:</label>
-                                    <input type="text" class="form-control" id="serviceName" name="serviceName" 
+                                    <input type="text" class="form-control" id="serviceName" name="serviceName"
                                            placeholder="e.g.: supabase, github, netflix..." required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="domainSelect" class="form-label">Domain:</label>
+                                    <select class="form-select" id="domainSelect" name="domainSelect" required>
+                                        <option value="">Loading domains...</option>
+                                    </select>
                                 </div>
 
                                 <div class="mb-3">
@@ -137,6 +144,7 @@
         }
         
         const serviceNameInput = document.getElementById('serviceName');
+        const domainSelect = document.getElementById('domainSelect');
         const previewEmail = document.getElementById('previewEmail');
         const form = document.getElementById('aliasForm');
         const submitBtn = document.getElementById('submitBtn');
@@ -147,7 +155,8 @@
 
         // Configuration variables
         let appConfig = {
-            domain: 'example.com',
+            domains: ['example.com'],
+            default_domain: 'example.com',
             default_redirect: 'user@example.com'
         };
 
@@ -172,12 +181,17 @@
                 if (currentUser && currentUser.id) {
                     configUrl += `?user_id=${encodeURIComponent(currentUser.id)}`;
                 }
-                
+
                 const response = await fetch(configUrl);
                 if (response.ok) {
                     appConfig = await response.json();
+
+                    // Populate domain dropdown
+                    populateDomainSelect();
+
                     // Update the redirect field with the user-specific default value
                     redirectToInput.value = appConfig.default_redirect;
+
                     // Update the preview
                     updatePreview();
                 } else {
@@ -188,6 +202,22 @@
             }
         }
 
+        // Populate domain dropdown
+        function populateDomainSelect() {
+            domainSelect.innerHTML = '';
+            const domains = appConfig.domains || [appConfig.default_domain || 'example.com'];
+
+            domains.forEach(domain => {
+                const option = document.createElement('option');
+                option.value = domain;
+                option.textContent = domain;
+                if (domain === appConfig.default_domain) {
+                    option.selected = true;
+                }
+                domainSelect.appendChild(option);
+            });
+        }
+
         // Generate a random 4-digit number
         function generateRandomNumber() {
             return Math.floor(1000 + Math.random() * 9000);
@@ -196,10 +226,12 @@
         // Update preview
         function updatePreview() {
             const serviceName = serviceNameInput.value.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const selectedDomain = domainSelect.value || appConfig.default_domain;
+
             if (serviceName) {
-                previewEmail.textContent = `${serviceName}${currentRandomNumber}@${appConfig.domain}`;
+                previewEmail.textContent = `${serviceName}${currentRandomNumber}@${selectedDomain}`;
             } else {
-                previewEmail.textContent = `service${currentRandomNumber}@${appConfig.domain}`;
+                previewEmail.textContent = `service${currentRandomNumber}@${selectedDomain}`;
             }
         }
 
@@ -210,20 +242,26 @@
             updatePreview();
         });
 
+        // Listen for changes in the domain selector
+        domainSelect.addEventListener('change', function() {
+            updatePreview();
+        });
+
         // Handle form submission
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const serviceName = serviceNameInput.value.toLowerCase().replace(/[^a-z0-9]/g, '');
             const redirectTo = document.getElementById('redirectTo').value;
-            
+            const selectedDomain = domainSelect.value || appConfig.default_domain;
+
             if (!serviceName) {
                 showMessage('Please enter a valid service name.', 'danger');
                 return;
             }
 
             // Use the same random number as shown in preview
-            const aliasEmail = `${serviceName}${currentRandomNumber}@${appConfig.domain}`;
+            const aliasEmail = `${serviceName}${currentRandomNumber}@${selectedDomain}`;
 
             // Show loading state
             setLoadingState(true);

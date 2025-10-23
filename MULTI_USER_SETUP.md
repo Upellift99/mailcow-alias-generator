@@ -12,7 +12,8 @@ Your `config.json` file must contain a `users` section with all your users:
 {
   "mailcow_url": "https://mail.example.com",
   "api_key": "YOUR_MAILCOW_API_KEY_HERE",
-  "domain": "example.com",
+  "domains": ["example.com", "example2.com"],
+  "default_domain": "example.com",
   "sogo_visible": true,
   "altcha_enabled": false,
   "altcha_hmac_key": "head -c32 /dev/urandom | base64",
@@ -24,7 +25,7 @@ Your `config.json` file must contain a `users` section with all your users:
       "description": "First user"
     },
     "user2": {
-      "password": "password_user2", 
+      "password": "password_user2",
       "default_redirect": "user2@example.com",
       "description": "Second user"
     }
