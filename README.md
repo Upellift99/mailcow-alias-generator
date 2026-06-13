@@ -6,6 +6,8 @@
 [![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.1-000000.svg?logo=flask)](https://flask.palletsprojects.com/)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
+[![GHCR image](https://ghcr-badge.egpl.dev/upellift99/mailcow-alias-generator/latest_tag?ignore=sha-*&label=ghcr&color=2496ED)](https://github.com/Upellift99/mailcow-alias-generator/pkgs/container/mailcow-alias-generator)
+[![Image size](https://ghcr-badge.egpl.dev/upellift99/mailcow-alias-generator/size?label=image%20size&color=2496ED)](https://github.com/Upellift99/mailcow-alias-generator/pkgs/container/mailcow-alias-generator)
 
 A simple web tool to automate email alias creation via the Mailcow API. Perfect for quickly creating dedicated aliases for each service (e.g., `supabase1234@patopesto.com`).
 
