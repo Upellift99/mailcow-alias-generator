@@ -2,4 +2,4 @@ Flask==3.1.0
 Flask-CORS==5.0.0
 requests==2.32.3
 altcha>=1.0.0,<2.0.0
-gunicorn==23.0.0
+gunicorn==26.0.0
