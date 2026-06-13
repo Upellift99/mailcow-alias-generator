@@ -204,7 +204,7 @@ def create_mailcow_alias(alias_email, redirect_to, config):
         return False, "Unable to connect to Mailcow server"
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
-        return False, f"Unexpected error: {str(e)}"
+        return False, "Unexpected error while creating the alias"
 
 def check_alias_exists(alias_email, config):
     """Check if an alias already exists"""
@@ -267,7 +267,7 @@ def create_altcha_challenge(config):
         
     except Exception as e:
         logger.error(f"Error creating ALTCHA challenge: {e}")
-        return None, f"ALTCHA error: {str(e)}"
+        return None, "ALTCHA error"
 
 def verify_altcha_via_gatecha(payload, config):
     """Verify an ALTCHA solution against a self-hosted GateCHA server.
@@ -304,7 +304,7 @@ def verify_altcha_via_gatecha(payload, config):
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Error contacting GateCHA server: {e}")
-        return False, f"GateCHA error: {str(e)}"
+        return False, "GateCHA verification error"
 
 
 def verify_altcha_solution(payload, config, check_expires=True):
@@ -334,7 +334,7 @@ def verify_altcha_solution(payload, config, check_expires=True):
             
     except Exception as e:
         logger.error(f"Error verifying ALTCHA solution: {e}")
-        return False, f"ALTCHA error: {str(e)}"
+        return False, "ALTCHA verification error"
 
 def password_matches(stored, provided):
     """Compare a provided password against the stored value in constant time.
@@ -509,9 +509,10 @@ def status():
             }), 500
             
     except Exception as e:
+        logger.error(f"Unable to connect to Mailcow: {e}")
         return jsonify({
             'status': 'error',
-            'message': f'Unable to connect to Mailcow: {str(e)}'
+            'message': 'Unable to connect to Mailcow'
         }), 500
 
 @app.route('/api/config')
