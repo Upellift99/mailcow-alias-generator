@@ -609,11 +609,27 @@ The captcha can run with one of two providers, selected via `altcha_provider` in
    ```json
    {
      "altcha_enabled": true,
+     "altcha_provider": "local",
      "altcha_hmac_key": "your_generated_base64_key_here"
    }
    ```
 
 3. **Restart the application** to apply changes
+
+#### Option B — GateCHA provider
+
+Delegate the captcha to a self-hosted [GateCHA](https://gatecha.org/) server. Create an API key in the GateCHA dashboard, then:
+
+```json
+{
+  "altcha_enabled": true,
+  "altcha_provider": "gatecha",
+  "gatecha_url": "https://gatecha.example.com",
+  "gatecha_api_key": "gk_your_api_key"
+}
+```
+
+The widget fetches its challenge directly from `GET {gatecha_url}/api/v1/challenge?apiKey=...`, and this app verifies solutions server-side via `POST {gatecha_url}/api/v1/verify?apiKey=...`. The local `altcha_hmac_key` is not used in this mode.
 
 #### ALTCHA Features
 

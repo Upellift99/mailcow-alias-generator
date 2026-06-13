@@ -59,7 +59,13 @@ DEFAULT_CONFIG = {
     "default_domain": "example.com",
     "sogo_visible": True,
     "altcha_enabled": False,
+    # Captcha provider: "local" (built-in, uses altcha_hmac_key) or
+    # "gatecha" (delegate challenge/verify to a self-hosted GateCHA server).
+    "altcha_provider": "local",
     "altcha_hmac_key": "head -c32 /dev/urandom | base64",
+    # Only used when altcha_provider == "gatecha":
+    "gatecha_url": "https://gatecha.example.com",
+    "gatecha_api_key": "gk_your_api_key",
     "port": 5000,
     "users": {
         "user1": {
@@ -263,8 +269,50 @@ def create_altcha_challenge(config):
         logger.error(f"Error creating ALTCHA challenge: {e}")
         return None, f"ALTCHA error: {str(e)}"
 
+def verify_altcha_via_gatecha(payload, config):
+    """Verify an ALTCHA solution against a self-hosted GateCHA server.
+
+    GateCHA (https://gatecha.org) exposes an ALTCHA-compatible verify endpoint:
+        POST {gatecha_url}/api/v1/verify?apiKey=gk_xxx   body: {"payload": "..."}
+        -> {"ok": true|false, ...}
+    """
+    gatecha_url = config.get('gatecha_url')
+    api_key = config.get('gatecha_api_key')
+
+    if not gatecha_url or not api_key:
+        logger.error("GateCHA URL or API key not configured")
+        return False, "GateCHA not configured"
+
+    verify_url = f"{gatecha_url.rstrip('/')}/api/v1/verify"
+
+    try:
+        response = requests.post(
+            verify_url,
+            params={'apiKey': api_key},
+            json={'payload': payload},
+            timeout=10,
+        )
+
+        if response.status_code == 200 and response.json().get('ok'):
+            logger.info("ALTCHA solution verified successfully via GateCHA")
+            return True, "Valid solution"
+
+        logger.warning(
+            f"GateCHA rejected the solution (HTTP {response.status_code})"
+        )
+        return False, "Invalid solution"
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Error contacting GateCHA server: {e}")
+        return False, f"GateCHA error: {str(e)}"
+
+
 def verify_altcha_solution(payload, config, check_expires=True):
-    """Verify an ALTCHA solution"""
+    """Verify an ALTCHA solution using the configured provider"""
+    # Delegate to GateCHA when configured as the provider.
+    if config.get('altcha_provider', 'local') == 'gatecha':
+        return verify_altcha_via_gatecha(payload, config)
+
     try:
         altcha_hmac_key = config.get('altcha_hmac_key')
         if not altcha_hmac_key:
@@ -486,11 +534,23 @@ def get_config():
         user_config = config['users'][user_id]
         default_redirect = user_config.get('default_redirect', default_redirect)
     
+    # Tell the frontend which URL the ALTCHA widget should use for its challenge.
+    # Local provider serves it from this app; GateCHA serves it from its own host.
+    altcha_provider = config.get('altcha_provider', 'local')
+    if altcha_provider == 'gatecha':
+        gatecha_url = config.get('gatecha_url', '').rstrip('/')
+        api_key = config.get('gatecha_api_key', '')
+        altcha_challenge_url = f"{gatecha_url}/api/v1/challenge?apiKey={api_key}"
+    else:
+        altcha_challenge_url = '/api/altcha/challenge'
+
     return jsonify({
         'domains': config.get('domains', [config.get('domain', 'example.com')]),
         'default_domain': config.get('default_domain', config.get('domains', ['example.com'])[0]),
         'default_redirect': default_redirect,
         'altcha_enabled': config.get('altcha_enabled', False),
+        'altcha_provider': altcha_provider,
+        'altcha_challenge_url': altcha_challenge_url,
         'multi_user_enabled': bool(config.get('users'))
     })
 
@@ -505,7 +565,12 @@ def get_altcha_challenge():
     # Check if ALTCHA is enabled
     if not config.get('altcha_enabled', False):
         return jsonify({'error': 'ALTCHA not enabled'}), 400
-    
+
+    # In GateCHA mode the widget fetches its challenge directly from the GateCHA
+    # server; this local endpoint is not used.
+    if config.get('altcha_provider', 'local') == 'gatecha':
+        return jsonify({'error': 'Challenges are served by the GateCHA server'}), 400
+
     try:
         challenge, error = create_altcha_challenge(config)
         

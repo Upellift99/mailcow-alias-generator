@@ -1,21 +1,27 @@
 {
   "mailcow_url": "https://mail.example.com",
   "api_key": "YOUR_MAILCOW_API_KEY_HERE",
-  "domain": "example.com",
+  "domains": ["example.com", "example2.com"],
+  "default_domain": "example.com",
   "sogo_visible": true,
   "altcha_enabled": false,
+  "_comment_altcha_provider": "Captcha provider: 'local' (built-in, uses altcha_hmac_key) or 'gatecha' (self-hosted GateCHA server, see https://gatecha.org)",
+  "altcha_provider": "local",
   "altcha_hmac_key": "head -c32 /dev/urandom | base64",
+  "_comment_gatecha": "Only used when altcha_provider is 'gatecha'. The API key (gk_...) is created in the GateCHA dashboard.",
+  "gatecha_url": "https://gatecha.example.com",
+  "gatecha_api_key": "gk_your_api_key",
   "port": 5000,
   "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)",
-  "_comment_users": "Multi-user configuration - each user has their own password and default redirect address",
+  "_comment_users": "Multi-user configuration - each user has their own password and default redirect address. Generate password hashes with: python generate_password_hash.py",
   "users": {
     "user1": {
-      "password": "password_user1",
+      "password": "pbkdf2:sha256:...replace_with_a_generated_hash...",
       "default_redirect": "user1@example.com",
       "description": "First user"
     },
     "user2": {
-      "password": "password_user2",
+      "password": "pbkdf2:sha256:...replace_with_a_generated_hash...",
       "default_redirect": "user2@example.com",
       "description": "Second user"
     }

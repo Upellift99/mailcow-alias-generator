@@ -124,7 +124,10 @@
                 // Create ALTCHA widget only if enabled
                 if (config.altcha_enabled) {
                     const altchaWidget = document.createElement('altcha-widget');
-                    altchaWidget.setAttribute('challengeurl', '/api/altcha/challenge');
+                    // ALTCHA widget v3 uses the `challenge` attribute (replaces v2's
+                    // `challengeurl`). The URL points either at this app (local
+                    // provider) or at a GateCHA server, as decided by the backend.
+                    altchaWidget.setAttribute('challenge', config.altcha_challenge_url || '/api/altcha/challenge');
                     
                     // Force styling to occupy full width
                     altchaWidget.style.width = '100%';
