@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint & syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff
+
+      - name: Byte-compile sources
+        run: python -m compileall -q app.py
+
+      - name: Lint (critical errors — must pass)
+        # Stop the build only on real problems: syntax errors and undefined names.
+        run: ruff check --select=E9,F63,F7,F82 .
+
+      - name: Lint (full report — informational)
+        continue-on-error: true
+        run: ruff check --output-format=github .
+
+  docker:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: mailcow-alias-generator:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test (container boots & serves the UI)
+        run: |
+          # Provide a minimal config so the app starts without a real Mailcow instance.
+          cp config.sample.json config.json
+          docker run -d --name mag -p 5000:5000 \
+            -v "$PWD/config.json:/app/config.json:ro" \
+            mailcow-alias-generator:ci
+          echo "Waiting for the container to come up..."
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:5000/ >/dev/null 2>&1; then
+              echo "✅ UI is reachable"
+              docker rm -f mag
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "❌ Container did not become healthy in time"
+          docker logs mag
+          docker rm -f mag
+          exit 1
