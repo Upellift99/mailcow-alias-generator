@@ -594,8 +594,15 @@ The application includes built-in security features:
 
 - **Password Protection**: Access to the application is protected by a configurable password
 - **Hashed passwords**: Store passwords as secure Werkzeug hashes (constant-time verification); plaintext is supported for backward compatibility but discouraged
+- **Rate limiting**: The login endpoint (`/api/auth`) is rate-limited to slow down brute-force attempts
 - **Session Management**: Authentication is managed via browser sessions
 - **ALTCHA Captcha**: Optional privacy-focused captcha system for additional protection
+
+### Rate limiting
+
+The authentication endpoint `/api/auth` is rate-limited (default: **10 requests/minute and 50/hour per IP**) to mitigate brute-force attacks; exceeding it returns HTTP 429.
+
+Counters are stored in memory by default. With multiple Gunicorn workers, each worker keeps its own counters, so the effective limit is multiplied by the worker count. For a strict shared limit, point the limiter at a shared backend via the `RATELIMIT_STORAGE_URI` environment variable (e.g. `redis://redis:6379`).
 
 ### Hashing User Passwords (recommended)
 

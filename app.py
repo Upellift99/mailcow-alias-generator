@@ -10,6 +10,8 @@ import hmac
 import requests
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from werkzeug.security import check_password_hash
 import logging
 from datetime import datetime, timedelta
@@ -50,6 +52,24 @@ _HASH_PREFIXES = ('pbkdf2:', 'scrypt:', 'argon2')
 
 app = Flask(__name__)
 CORS(app)
+
+# Rate limiting (brute-force protection). Limits are opt-in per route via the
+# decorator below. Uses in-memory storage by default — note that with multiple
+# gunicorn workers each worker keeps its own counters, so the effective limit is
+# multiplied by the worker count. Set RATELIMIT_STORAGE_URI (e.g. a redis:// URL)
+# for a shared, strict limit across workers.
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri=os.getenv('RATELIMIT_STORAGE_URI', 'memory://'),
+)
+
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    """Return a JSON body for rate-limit errors so the frontend can display them."""
+    return jsonify({'error': 'Too many attempts. Please wait a moment and try again.'}), 429
 
 # Default configuration
 DEFAULT_CONFIG = {
@@ -589,6 +609,7 @@ def get_altcha_challenge():
         return jsonify({'error': 'Internal server error'}), 500
 
 @app.route('/api/auth', methods=['POST'])
+@limiter.limit("10 per minute; 50 per hour")
 def authenticate():
     """Endpoint to authenticate with password"""
     config = load_config()
