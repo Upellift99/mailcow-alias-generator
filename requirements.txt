@@ -1,5 +1,5 @@
-Flask==2.3.3
-Flask-CORS==4.0.0
-requests==2.31.0
-altcha
-gunicorn==21.2.0
+Flask==3.1.0
+Flask-CORS==5.0.0
+requests==2.32.3
+altcha>=1.0.0,<2.0.0
+gunicorn==23.0.0

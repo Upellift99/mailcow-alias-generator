@@ -29,7 +29,7 @@ A simple web tool to automate email alias creation via the Mailcow API. Perfect 
 
 ### Prerequisites
 
-- Python 3.7+ OR Docker
+- Python 3.9+ OR Docker
 - Access to a Mailcow instance with API enabled
 - Mailcow API key with write permissions
 - Python dependencies: Flask, requests, flask-cors, altcha (for ALTCHA captcha support)
@@ -104,7 +104,7 @@ Docker greatly simplifies installation and deployment. No Python installation re
 ### Option 2: Manual Installation
 
 #### Prerequisites
-- Python 3.7+
+- Python 3.9+
 
 #### Installation Steps
 
