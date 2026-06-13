@@ -154,6 +154,17 @@ Docker greatly simplifies installation and deployment. No Python installation re
    }
    ```
 
+## 🧪 Tests
+
+The project ships a [pytest](https://docs.pytest.org/) suite covering password verification, configuration, the API endpoints and rate limiting. Run it with:
+
+```bash
+pip install -r requirements-dev.txt
+pytest -q
+```
+
+The same suite runs automatically in CI on every push and pull request.
+
 ## 🔧 Mailcow Configuration
 
 ### Getting an API Key

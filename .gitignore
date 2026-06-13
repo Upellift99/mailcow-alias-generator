@@ -49,3 +49,5 @@ Thumbs.db
 
 # Node
 node_modules/
+# Pytest
+.pytest_cache/
