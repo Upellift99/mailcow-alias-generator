@@ -17,6 +17,8 @@ import logging
 from datetime import datetime, timedelta
 from altcha import ChallengeOptions, create_challenge, verify_solution
 
+__version__ = "1.0.0"
+
 # Logging configuration
 # In Docker, we only log to console (best practice for containers)
 if os.getenv('DOCKER_CONTAINER'):
@@ -565,6 +567,7 @@ def get_config():
         altcha_challenge_url = '/api/altcha/challenge'
 
     return jsonify({
+        'version': __version__,
         'domains': config.get('domains', [config.get('domain', 'example.com')]),
         'default_domain': config.get('default_domain', config.get('domains', ['example.com'])[0]),
         'default_redirect': default_redirect,

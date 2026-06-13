@@ -72,6 +72,7 @@ def test_config_local_provider(client):
     assert data["altcha_challenge_url"] == "/api/altcha/challenge"
     assert data["domains"] == ["example.com", "example2.com"]
     assert data["multi_user_enabled"] is True
+    assert data["version"] == app_module.__version__
 
 
 def test_config_gatecha_provider(client, monkeypatch):
