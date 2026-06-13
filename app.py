@@ -434,7 +434,6 @@ def create_alias():
 
         # Check that alias uses one of the allowed domains
         allowed_domains = config.get('domains', [])
-        alias_domain = alias_email.split('@')[1] if '@' in alias_email else ''
         if not any(alias_email.endswith(f"@{domain}") for domain in allowed_domains):
             domains_list = ', '.join(allowed_domains)
             return jsonify({'error': f'Alias must use one of the allowed domains: {domains_list}'}), 400
@@ -630,7 +629,7 @@ def authenticate():
                 }
             })
         else:
-            logger.warning(f"Failed authentication attempt")
+            logger.warning("Failed authentication attempt")
             return jsonify({'error': 'Invalid password'}), 401
             
     except Exception as e:
