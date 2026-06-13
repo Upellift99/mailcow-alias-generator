@@ -89,11 +89,38 @@ To add a new user, simply add a new entry in the `users` section:
 
 ## Security
 
+### Password hashing (recommended)
+
+Passwords should be stored as **hashes**, not plaintext. Generate a hash with the
+bundled helper and paste the result into the `password` field:
+
+```bash
+python generate_password_hash.py            # prompts for the password
+# or
+python generate_password_hash.py "mypassword"
+```
+
+This prints a value such as `pbkdf2:sha256:...`. Example user entry:
+
+```json
+"user1": {
+  "password": "pbkdf2:sha256:1000000$abc...$def...",
+  "default_redirect": "user1@example.com",
+  "description": "First user"
+}
+```
+
+The application verifies hashes securely (constant-time, via Werkzeug). Plaintext
+passwords are still accepted for backward compatibility but are **discouraged** —
+the app logs a warning at startup when it detects them, and passwords are compared
+in constant time to mitigate timing attacks.
+
+### General
+
 - Each user can only see their own information
-- Passwords are stored in plain text in the configuration file
 - Make sure the `config.json` file has proper permissions (read-only for the application user)
 - Use strong, unique passwords for each user
-- Consider using environment variables for sensitive data in production
+- Enable the optional ALTCHA captcha to slow down brute-force attempts against the login endpoint
 
 ## User management
 

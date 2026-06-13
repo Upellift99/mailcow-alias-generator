@@ -6,9 +6,11 @@ Flask server to automatically create aliases via Mailcow API
 
 import os
 import json
+import hmac
 import requests
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+from werkzeug.security import check_password_hash
 import logging
 from datetime import datetime, timedelta
 from altcha import ChallengeOptions, create_challenge, verify_solution
@@ -42,6 +44,9 @@ else:
         handlers=handlers
     )
 logger = logging.getLogger(__name__)
+
+# Prefixes used by Werkzeug-generated password hashes.
+_HASH_PREFIXES = ('pbkdf2:', 'scrypt:', 'argon2')
 
 app = Flask(__name__)
 CORS(app)
@@ -107,7 +112,20 @@ def load_config():
         # Set default_domain if not specified
         if not config.get('default_domain'):
             config['default_domain'] = config['domains'][0]
-        
+
+        # Warn if any user still uses a plaintext password instead of a hash.
+        plaintext_users = [
+            uid for uid, uc in config.get('users', {}).items()
+            if uc.get('password') and not str(uc['password']).startswith(_HASH_PREFIXES)
+        ]
+        if plaintext_users:
+            logger.warning(
+                "Plaintext password(s) detected for user(s): %s. "
+                "Generate hashes with `python generate_password_hash.py` and "
+                "replace the password values in config.json.",
+                ', '.join(plaintext_users)
+            )
+
         return config
     except json.JSONDecodeError as e:
         logger.error(f"JSON format error in config.json: {e}")
@@ -270,18 +288,48 @@ def verify_altcha_solution(payload, config, check_expires=True):
         logger.error(f"Error verifying ALTCHA solution: {e}")
         return False, f"ALTCHA error: {str(e)}"
 
+def password_matches(stored, provided):
+    """Compare a provided password against the stored value in constant time.
+
+    Recommended: store a Werkzeug hash (see generate_password_hash.py), e.g.
+    "pbkdf2:sha256:...". For backward compatibility, legacy plaintext passwords
+    are still accepted and compared with a constant-time check to avoid timing
+    attacks. Plaintext storage is discouraged.
+    """
+    if not stored or provided is None:
+        return False
+
+    if stored.startswith(_HASH_PREFIXES):
+        try:
+            return check_password_hash(stored, provided)
+        except Exception as e:
+            logger.error(f"Error checking password hash: {e}")
+            return False
+
+    # Legacy plaintext password — constant-time comparison.
+    return hmac.compare_digest(str(stored), str(provided))
+
+
 def authenticate_user(password, config):
     """Authenticate user and return user info if successful"""
     # Check multi-user configuration
     users = config.get('users', {})
+
+    matched_user = None
+    # Iterate over every user (no early break) so authentication time does not
+    # depend on which entry matched, preventing user enumeration via timing.
     for user_id, user_config in users.items():
-        if user_config.get('password') == password:
-            return {
-                'user_id': user_id,
-                'default_redirect': user_config.get('default_redirect', 'user@example.com'),
-                'description': user_config.get('description', f'User {user_id}')
-            }
-    
+        if password_matches(user_config.get('password'), password):
+            matched_user = (user_id, user_config)
+
+    if matched_user:
+        user_id, user_config = matched_user
+        return {
+            'user_id': user_id,
+            'default_redirect': user_config.get('default_redirect', 'user@example.com'),
+            'description': user_config.get('description', f'User {user_id}')
+        }
+
     return None
 
 @app.route('/')

@@ -572,14 +572,32 @@ docker stats mailcow-alias-generator
 The application includes built-in security features:
 
 - **Password Protection**: Access to the application is protected by a configurable password
+- **Hashed passwords**: Store passwords as secure Werkzeug hashes (constant-time verification); plaintext is supported for backward compatibility but discouraged
 - **Session Management**: Authentication is managed via browser sessions
 - **ALTCHA Captcha**: Optional privacy-focused captcha system for additional protection
 
+### Hashing User Passwords (recommended)
+
+Instead of storing plaintext passwords in [`config.json`](config.json:1), generate a hash and use it as the `password` value:
+
+```bash
+python generate_password_hash.py            # prompts for the password
+# or
+python generate_password_hash.py "mypassword"
+```
+
+The command prints a value like `pbkdf2:sha256:...` — paste it into the user's `password` field. The application detects and verifies hashes automatically. When plaintext passwords are detected, a warning is logged at startup. See [`MULTI_USER_SETUP.md`](MULTI_USER_SETUP.md) for details.
+
 ### ALTCHA Captcha Integration
 
-[ALTCHA](https://altcha.org/) is a privacy-focused, GDPR-compliant alternative to traditional captchas that doesn't track users or require external services.
+[ALTCHA](https://altcha.org/) is a privacy-focused, GDPR-compliant alternative to traditional captchas that doesn't track users or require external services. This project ships the **ALTCHA widget v3**.
 
-#### Enabling ALTCHA
+The captcha can run with one of two providers, selected via `altcha_provider` in [`config.json`](config.json:1):
+
+- **`local`** (default): challenges are generated and verified by this app using a local HMAC key.
+- **`gatecha`**: challenge generation and verification are delegated to a self-hosted [GateCHA](https://gatecha.org/) server ([source](https://github.com/Upellift99/GateCHA)) — useful to centralize/decouple captcha across several sites.
+
+#### Option A — Local provider
 
 1. **Generate an HMAC key**:
    ```bash
@@ -615,7 +633,7 @@ The application includes built-in security features:
 ### General Security Recommendations
 
 - **Protect your API key**: Never share it and store it securely
-- **Strong passwords**: Use a secure access password
+- **Strong passwords**: Use a secure access password, and store it hashed (`python generate_password_hash.py`)
 - **Network access**: Limit application access (firewall, VPN, etc.)
 - **HTTPS**: Use a reverse proxy with SSL in production
 - **Regular updates**: Keep dependencies and system updated
