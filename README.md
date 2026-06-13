@@ -38,16 +38,20 @@ A simple, self-hosted web tool to create email aliases via the [Mailcow](https:/
 
 ## 🚀 Quick start (Docker)
 
-A pre-built image is published to the GitHub Container Registry, so no local build is required.
+The image is published to the GitHub Container Registry, so **you don't need to clone the repository** — just a `docker-compose.yml` and your `config.json` in an empty folder:
 
 ```bash
-git clone https://github.com/Upellift99/mailcow-alias-generator.git
-cd mailcow-alias-generator
-cp config.sample.json config.json   # then edit config.json (see Configuration)
+mkdir mailcow-alias-generator && cd mailcow-alias-generator
+
+# Grab the compose file and a config template
+curl -O https://raw.githubusercontent.com/Upellift99/mailcow-alias-generator/main/docker-compose.yml
+curl -o config.json https://raw.githubusercontent.com/Upellift99/mailcow-alias-generator/main/config.sample.json
+
+# Edit config.json (Mailcow URL, API key, domains, users — see Configuration)
 docker compose up -d
 ```
 
-The app is now available at `http://localhost:5000` (change the host port via `HOST_PORT` in `.env`).
+The app is now available at `http://localhost:5000` (change the host port via `HOST_PORT` in a `.env` file).
 
 ```bash
 docker compose ps          # status
@@ -55,16 +59,21 @@ docker compose logs -f     # logs
 docker compose pull && docker compose up -d   # update to the latest image
 ```
 
-> `docker-compose.yml` uses `ghcr.io/upellift99/mailcow-alias-generator:latest` and mounts your `config.json` read-only. To build from source instead, swap `image:` for `build: .` and run `docker compose up -d --build`.
+> `docker-compose.yml` pulls `ghcr.io/upellift99/mailcow-alias-generator:latest` and mounts your `config.json` read-only — the image is self-contained, so that's all you need to run.
 
 <details>
-<summary>Run without Docker (Python 3.9+)</summary>
+<summary>Build from source / run without Docker</summary>
+
+Clone the repo if you want to build the image yourself or hack on the code:
 
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/Upellift99/mailcow-alias-generator.git
+cd mailcow-alias-generator
 cp config.sample.json config.json   # then edit it
-python app.py
 ```
+
+- **Build the image locally**: edit `docker-compose.yml` (swap `image:` for `build: .`) and run `docker compose up -d --build`.
+- **Run with Python 3.9+**: `pip install -r requirements.txt && python app.py`.
 </details>
 
 ## 🔧 Configuration
