@@ -3,13 +3,12 @@
 [![CI](https://github.com/Upellift99/mailcow-alias-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/Upellift99/mailcow-alias-generator/actions/workflows/ci.yml)
 [![Publish Docker image](https://github.com/Upellift99/mailcow-alias-generator/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/Upellift99/mailcow-alias-generator/actions/workflows/docker-publish.yml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.1-000000.svg?logo=flask)](https://flask.palletsprojects.com/)
-[![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Release](https://img.shields.io/github/v/release/Upellift99/mailcow-alias-generator?label=release&color=blue)](https://github.com/Upellift99/mailcow-alias-generator/releases)
 [![GHCR image](https://img.shields.io/badge/ghcr.io-image-2496ED?logo=docker&logoColor=white)](https://github.com/Upellift99/mailcow-alias-generator/pkgs/container/mailcow-alias-generator)
 
-A simple web tool to automate email alias creation via the Mailcow API. Perfect for quickly creating dedicated aliases for each service (e.g., `supabase1234@patopesto.com`).
+A simple, self-hosted web tool to create email aliases via the [Mailcow](https://mailcow.email/) API. Perfect for giving every service its own throwaway alias (e.g. `supabase1234@example.com`) that redirects to your real inbox.
 
 📦 **Repository**: [github.com/Upellift99/mailcow-alias-generator](https://github.com/Upellift99/mailcow-alias-generator)
 
@@ -30,649 +29,113 @@ A simple web tool to automate email alias creation via the Mailcow API. Perfect 
 
 ## ✨ Features
 
-- **Modern web interface**: Bootstrap 5-powered responsive design
-- **Intuitive user experience**: Simple and elegant page for creating aliases
-- **Automatic generation**: Automatically adds a random 4-digit number
-- **Multiple domains support**: Choose from multiple configured domains with dropdown selector
-- **Mailcow API integration**: Direct creation via Mailcow API
-- **Validation**: Format verification and alias existence checking
-- **Logs**: History of created aliases
-- **Flexible configuration**: Customizable parameters including port
-- **Multi-user support**: Multiple users with individual passwords and default redirect addresses
-- **Security features**: Password protection and optional ALTCHA captcha integration
-- **ALTCHA captcha**: Privacy-focused, GDPR-compliant captcha system (optional)
+- **One-click aliases** with an automatic random suffix and a live preview + QR code
+- **Multiple domains** selectable from a dropdown
+- **Multi-user**: each user has their own password and default redirect address
+- **Secure login**: hashed passwords, login rate limiting, and an optional [ALTCHA](https://altcha.org/) captcha (privacy-friendly, GDPR-compliant)
+- **Ready to deploy**: published Docker image + Docker Compose, responsive Bootstrap 5 UI
+- **Simple JSON config** and a small REST API
 
-## 🚀 Installation
+## 🚀 Quick start (Docker)
 
-### Prerequisites
-
-- Python 3.9+ OR Docker
-- Access to a Mailcow instance with API enabled
-- Mailcow API key with write permissions
-- Python dependencies: Flask, requests, flask-cors, altcha (for ALTCHA captcha support)
-
-### Option 1: Docker Installation (Recommended)
-
-Docker greatly simplifies installation and deployment. No Python installation required.
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/Upellift99/mailcow-alias-generator.git
-   cd mailcow-alias-generator
-   ```
-
-2. **Create configuration file**:
-   ```bash
-   cp config.sample.json config.json
-   ```
-
-3. **Edit the `config.json` file** with your settings:
-   ```json
-   {
-     "mailcow_url": "https://your-mailcow.example.com",
-     "api_key": "YOUR_MAILCOW_API_KEY",
-     "domains": ["example.com", "example2.com"],
-     "default_domain": "example.com",
-     "sogo_visible": true,
-     "altcha_enabled": false,
-     "altcha_hmac_key": "your_base64_encoded_hmac_key",
-     "port": 5000,
-     "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)",
-     "_comment_domains": "List of available domains - users can choose from this list",
-     "_comment_default_domain": "Default domain selected in the dropdown (must be in the domains list)",
-     "_comment_users": "Multi-user configuration - each user has their own password and default redirect address",
-     "users": {
-       "admin": {
-         "password": "your_secure_password",
-         "default_redirect": "admin@example.com",
-         "description": "Administrator"
-       },
-       "user1": {
-         "password": "user1_password",
-         "default_redirect": "user1@example.com",
-         "description": "First user"
-       }
-     }
-   }
-   ```
-
-4. **Start with Docker Compose** (pulls the pre-built image from GHCR — no local build needed):
-   ```bash
-   docker compose up -d
-   ```
-
-5. **Check status**:
-   ```bash
-   docker compose ps
-   docker compose logs -f
-   ```
-
-6. **Access the application** at `http://localhost:5000`
-
-> 💡 **Tip**: To update to the latest published image:
->    ```bash
->    docker compose pull
->    docker compose up -d
->    ```
-> Prefer to build from your local source instead? Edit `docker-compose.yml` (swap
-> `image:` for `build: .`) and run `docker compose up -d --build`.
-
-> 💡 **Tip**: Check the [🐳 Docker Usage](#-docker-usage) section for advanced commands and production configuration.
-
-### Option 2: Manual Installation
-
-#### Prerequisites
-- Python 3.9+
-
-#### Installation Steps
-
-1. **Clone or download the files** into the `mailcow-alias-generator/` folder
-
-2. **Install Python dependencies**:
-   ```bash
-   cd mailcow-alias-generator
-   pip install -r requirements.txt
-   ```
-
-3. **Configure the application**:
-   ```bash
-   cp config.sample.json config.json
-   ```
-
-4. **Edit the `config.json` file** with your settings:
-   ```json
-   {
-     "mailcow_url": "https://your-mailcow.example.com",
-     "api_key": "YOUR_MAILCOW_API_KEY",
-     "domains": ["example.com", "example2.com"],
-     "default_domain": "example.com",
-     "sogo_visible": true,
-     "altcha_enabled": false,
-     "altcha_hmac_key": "your_base64_encoded_hmac_key",
-     "port": 5000,
-     "_comment_port": "In Docker mode, port is forced to 5000 (see docker-start.sh and docker-compose.yml)",
-     "_comment_domains": "List of available domains - users can choose from this list",
-     "_comment_default_domain": "Default domain selected in the dropdown (must be in the domains list)",
-     "_comment_users": "Multi-user configuration - each user has their own password and default redirect address",
-     "users": {
-       "admin": {
-         "password": "your_secure_password",
-         "default_redirect": "admin@example.com",
-         "description": "Administrator"
-       },
-       "user1": {
-         "password": "user1_password",
-         "default_redirect": "user1@example.com",
-         "description": "First user"
-       }
-     }
-   }
-   ```
-
-## 🧪 Tests
-
-The project ships a [pytest](https://docs.pytest.org/) suite covering password verification, configuration, the API endpoints and rate limiting. Run it with:
+A pre-built image is published to the GitHub Container Registry, so no local build is required.
 
 ```bash
-pip install -r requirements-dev.txt
-pytest -q
+git clone https://github.com/Upellift99/mailcow-alias-generator.git
+cd mailcow-alias-generator
+cp config.sample.json config.json   # then edit config.json (see Configuration)
+docker compose up -d
 ```
 
-The same suite runs automatically in CI on every push and pull request.
-
-## 🔧 Mailcow Configuration
-
-### Getting an API Key
-
-1. Log in to your Mailcow interface
-2. Go to **Configuration** → **API Access**
-3. Create a new API key with permissions:
-   - `alias` (read/write)
-4. Copy the key into your `config.json`
-
-### Required Permissions
-
-The API key must have at least the following permissions:
-- **Alias**: Read and write
-- **Domains**: Read (for validation)
-
-## 🎯 Usage
-
-### Starting the Application
+The app is now available at `http://localhost:5000` (change the host port via `HOST_PORT` in `.env`).
 
 ```bash
+docker compose ps          # status
+docker compose logs -f     # logs
+docker compose pull && docker compose up -d   # update to the latest image
+```
+
+> `docker-compose.yml` uses `ghcr.io/upellift99/mailcow-alias-generator:latest` and mounts your `config.json` read-only. To build from source instead, swap `image:` for `build: .` and run `docker compose up -d --build`.
+
+<details>
+<summary>Run without Docker (Python 3.9+)</summary>
+
+```bash
+pip install -r requirements.txt
+cp config.sample.json config.json   # then edit it
 python app.py
 ```
+</details>
 
-The application will be available at: `http://localhost:5000` (or the port specified in your configuration)
+## 🔧 Configuration
 
-### Web Interface
+### 1. Get a Mailcow API key
 
-1. **Open your browser** to `http://localhost:5000` (or your configured port)
-2. **Enter your user password** (each user has their own password)
-3. **Complete the ALTCHA captcha** (if enabled)
-4. **Enter the service name** (e.g., `supabase`, `github`, `netflix`)
-5. **Select a domain** from the dropdown list (default domain is pre-selected)
-6. **Check the redirect address** (automatically filled with your default address)
-7. **Click "Create Alias"**
+In your Mailcow UI: **Configuration → API Access**, create a key with **read/write** on `alias` (and read on `domains` for validation). Put it in `config.json` as `api_key`.
 
-The alias will be automatically created with a format like: `supabase1234@example.com`
+### 2. Edit `config.json`
 
-### Multiple Domains Support
-
-The application supports multiple domains, allowing you to create aliases on different domains:
-- **Domain selection**: Choose from a dropdown list of configured domains
-- **Default domain**: Pre-selected domain when creating a new alias
-- **Dynamic preview**: Alias preview updates based on selected domain
-- **Flexible configuration**: Add as many domains as you need
-
-#### Configuring Multiple Domains
-
-In your `config.json`, use the `domains` array:
+Minimal example:
 
 ```json
 {
-  "domains": ["example.com", "example2.com", "example3.org"],
-  "default_domain": "example.com"
-}
-```
-
-**Note**: For backward compatibility, the old single `domain` format is still supported and will be automatically converted:
-
-```json
-{
-  "domain": "example.com"  // Will be converted to domains: ["example.com"]
-}
-```
-
-### Multi-User Support
-
-The application supports multiple users, each with their own:
-- **Individual password**: Each user authenticates with their own password
-- **Default redirect address**: Automatically pre-filled for each user
-- **User description**: Displayed in the interface to identify the current user
-
-See the [Multi-User Configuration Guide](MULTI_USER_SETUP.md) for detailed setup instructions.
-
-### REST API
-
-You can also use the API directly (replace 5000 with your configured port):
-
-```bash
-curl -X POST http://localhost:5000/api/create-alias \
-  -H "Content-Type: application/json" \
-  -d '{
-    "alias": "github5678@example.com",
-    "redirectTo": "user@example.com"
-  }'
-```
-
-### API Endpoints
-
-#### Check Status
-```bash
-curl http://localhost:5000/api/status
-```
-
-#### Get Configuration
-```bash
-curl http://localhost:5000/api/config
-```
-
-#### Authentication (if password protection is enabled)
-```bash
-curl -X POST http://localhost:5000/api/auth \
-  -H "Content-Type: application/json" \
-  -d '{
-    "password": "your_access_password",
-    "altcha": "altcha_solution_if_enabled"
-  }'
-```
-
-#### Get ALTCHA Challenge (if ALTCHA is enabled)
-```bash
-curl http://localhost:5000/api/altcha/challenge
-```
-
-## 📁 File Structure
-
-```
-mailcow-alias-generator/
-├── app.py                 # Main Flask server
-├── index.html             # Main web interface (Bootstrap 5)
-├── login.html             # Authentication page
-├── altcha.js              # ALTCHA captcha library
-├── Dockerfile             # Docker container definition
-├── docker-compose.yml     # Docker Compose configuration
-├── .dockerignore          # Docker ignore file
-├── config.json            # Configuration (to be created)
-├── config.sample.json     # Configuration example
-├── MULTI_USER_SETUP.md    # Multi-user configuration guide
-├── requirements.txt       # Python dependencies
-├── README.md              # This file
-├── favicon.ico            # Application favicon
-├── favicon.svg            # Application favicon (SVG)
-├── logs/                  # Log directory (Docker volume)
-│   ├── mailcow_alias.log  # Application logs
-│   └── alias_log.json     # Created aliases history
-└── start.sh               # Manual startup script
-```
-
-## ⚙️ Configuration Parameters
-
-| Parameter | Description | Example | Required |
-|-----------|-------------|---------|----------|
-| `mailcow_url` | URL of your Mailcow instance | `https://mail.example.com` | Yes |
-| `api_key` | Your Mailcow API key | `YOUR_API_KEY_HERE` | Yes |
-| `domains` | List of available domains for aliases | `["example.com", "example2.com"]` | Yes |
-| `default_domain` | Default domain pre-selected in dropdown | `"example.com"` | No** |
-| `domain` | Legacy: Single domain (backward compatible) | `"example.com"` | No*** |
-| `sogo_visible` | Make aliases visible in SOGo | `true` or `false` | No |
-| `altcha_enabled` | Enable ALTCHA captcha protection | `true` or `false` | No |
-| `altcha_hmac_key` | HMAC key for ALTCHA (base64 encoded) | `base64_encoded_key` | No* |
-| `port` | Port for the web interface | `5000` | No |
-| `users` | Multi-user configuration object | See below | Yes |
-
-*Required if `altcha_enabled` is `true`
-**If not specified, the first domain in the `domains` list will be used
-***Legacy format: if `domain` is provided without `domains`, it will be automatically converted to the new format
-
-### User Configuration
-
-Each user in the `users` object supports:
-
-| Parameter | Description | Example | Required |
-|-----------|-------------|---------|----------|
-| `password` | User's login password | `secure_password_123` | Yes |
-| `default_redirect` | Default email for alias redirection | `user@example.com` | Yes |
-| `description` | User description (shown in interface) | `Administrator` | No |
-
-Example user configuration:
-```json
-"users": {
-  "admin": {
-    "password": "admin_secure_password",
-    "default_redirect": "admin@example.com",
-    "description": "Administrator"
-  },
-  "john": {
-    "password": "john_password_123",
-    "default_redirect": "john@example.com",
-    "description": "John Doe"
+  "mailcow_url": "https://mail.example.com",
+  "api_key": "YOUR_MAILCOW_API_KEY",
+  "domains": ["example.com", "example2.com"],
+  "default_domain": "example.com",
+  "users": {
+    "admin": {
+      "password": "pbkdf2:sha256:...",
+      "default_redirect": "admin@example.com",
+      "description": "Administrator"
+    }
   }
 }
 ```
 
-## 🐳 Docker Usage
-
-### Docker Benefits
-
-- **Complete isolation**: Application runs in an isolated environment
-- **Simplified deployment**: No need to install Python or dependencies
-- **Portability**: Works on any system with Docker
-- **Log management**: Persistent volumes for logs
-- **Health checks**: Automatic application health monitoring
-- **Security**: Runs with non-root user
-
-### Pre-built image (GHCR)
-
-A ready-to-use image is published to the GitHub Container Registry on every push to `main` and on tagged releases:
-
-```bash
-docker pull ghcr.io/upellift99/mailcow-alias-generator:latest
-```
-
-Available tags: `latest`, the branch name (`main`), semantic version tags for releases (e.g. `1.2`, `1.2.3`), and a commit SHA tag (`sha-xxxxxxx`). The `docker-compose.yml` in this repository already uses this image by default.
-
-### Quick Start with Docker Compose (Recommended)
-
-```bash
-# 1. Clone and configure
-git clone https://github.com/Upellift99/mailcow-alias-generator.git
-cd mailcow-alias-generator
-cp config.sample.json config.json
-
-# 2. Edit config.json with your settings
-vi config.json  # or your preferred editor
-
-# 3. Start the application
-docker compose up -d
-
-# 4. Check status
-docker compose ps
-docker compose logs -f
-
-# 5. Access the application
-# http://localhost:5000
-```
-
-### Docker Compose Commands
-
-```bash
-# Start in background
-docker compose up -d
-
-# View logs in real-time
-docker compose logs -f
-
-# Restart the application
-docker compose restart
-
-# Stop the application
-docker compose down
-
-# Update to the latest published image
-docker compose pull
-docker compose up -d
-
-# View container status
-docker compose ps
-
-# Access container shell (debug)
-docker compose exec mailcow-alias-generator /bin/bash
-```
-
-### Docker Standalone Commands
-
-```bash
-# Pull the pre-built image from GHCR (or build locally: docker build -t ghcr.io/upellift99/mailcow-alias-generator .)
-docker pull ghcr.io/upellift99/mailcow-alias-generator:latest
-
-# Run with custom port
-docker run -d \
-  --name mailcow-alias-generator \
-  -p 8080:5000 \
-  -v $(pwd)/config.json:/app/config.json:ro \
-  -v $(pwd)/logs:/app/logs \
-  --restart unless-stopped \
-  ghcr.io/upellift99/mailcow-alias-generator:latest
-
-# Check container status
-docker ps
-docker logs mailcow-alias-generator
-
-# Stop and remove container
-docker stop mailcow-alias-generator
-docker rm mailcow-alias-generator
-```
-
-### Docker Configuration
-
-#### Environment Variables
-
-You can customize Docker deployment using environment variables. Copy the example file and modify as needed:
-
-```bash
-cp env.example .env
-```
-
-The [`env.example`](env.example:1) file contains:
-- `HOST_PORT`: External port for accessing the application (default: 5000)
-- `PYTHONUNBUFFERED`: Optional Python output buffering control
-
-Example `.env` file:
-```bash
-# Docker deployment port configuration
-# Host port (accessible from outside) - change this to use a different external port
-HOST_PORT=8080
-
-# Optional variables for advanced configuration
-PYTHONUNBUFFERED=1
-```
-
-The container also supports additional environment variables:
-
-```bash
-# In docker-compose.yml
-environment:
-  - PYTHONUNBUFFERED=1  # Unbuffered Python output
-  - FLASK_ENV=production  # Production mode
-```
-
-> **Note**: The container always uses port 5000 internally. Only change `HOST_PORT` in the `.env` file to expose the service on a different external port.
-
-#### Volumes
-
-```yaml
-volumes:
-  - ./config.json:/app/config.json:ro  # Configuration (read-only)
-  - ./logs:/app/logs                   # Persistent logs
-```
-
-#### Ports
-
-```yaml
-ports:
-  - "5000:5000"  # Default port
-  - "8080:5000"  # Custom port (host:container)
-```
-
-### Health Checks
-
-The application includes automatic health checks:
-
-```bash
-# Check manually
-curl -f http://localhost:5000/api/status
-
-# Via Docker
-docker inspect --format='{{.State.Health.Status}}' mailcow-alias-generator
-```
-
-### Production Deployment
-
-#### 1. Secure Configuration
-
-```yaml
-# docker-compose.override.yml
-services:
-  mailcow-alias-generator:
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-          cpus: '0.5'
-        reservations:
-          memory: 128M
-          cpus: '0.25'
-    environment:
-      - FLASK_ENV=production
-    restart: always
-```
-
-#### 2. Reverse Proxy with Nginx
-
-Uncomment the nginx service in [`docker-compose.yml`](docker-compose.yml:24):
-
-```yaml
-nginx:
-  image: nginx:alpine
-  container_name: mailcow-alias-nginx
-  ports:
-    - "80:80"
-    - "443:443"
-  volumes:
-    - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    - ./ssl:/etc/nginx/ssl:ro
-  depends_on:
-    - mailcow-alias-generator
-  restart: unless-stopped
-```
-
-#### 3. Nginx Configuration
-
-Create [`nginx.conf`](nginx.conf:1):
-
-```nginx
-events {
-    worker_connections 1024;
-}
-
-http {
-    upstream app {
-        server mailcow-alias-generator:5000;
-    }
-
-    server {
-        listen 80;
-        server_name your-domain.com;
-        
-        location / {
-            proxy_pass http://app;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-    }
-}
-```
-
-#### 4. Security
-
-- **Non-root user**: Application runs with `appuser` user (UID 1000)
-- **Read-only volumes**: Configuration is mounted read-only
-- **Network isolation**: Uses dedicated Docker network
-- **Resource limits**: Configurable memory and CPU limits
-
-### Docker Maintenance
-
-```bash
-# Backup logs
-docker cp mailcow-alias-generator:/app/logs ./backup-logs
-
-# Update application (pull the latest published image)
-docker compose pull
-docker compose up -d
-
-# Clean unused images
-docker system prune -f
-
-# Monitor resources
-docker stats mailcow-alias-generator
-```
-
-## 🔒 Security
-
-### Authentication & Access Control
-
-The application includes built-in security features:
-
-- **Password Protection**: Access to the application is protected by a configurable password
-- **Hashed passwords**: Store passwords as secure Werkzeug hashes (constant-time verification); plaintext is supported for backward compatibility but discouraged
-- **Rate limiting**: The login endpoint (`/api/auth`) is rate-limited to slow down brute-force attempts
-- **Session Management**: Authentication is managed via browser sessions
-- **ALTCHA Captcha**: Optional privacy-focused captcha system for additional protection
-
-### Rate limiting
-
-The authentication endpoint `/api/auth` is rate-limited (default: **10 requests/minute and 50/hour per IP**) to mitigate brute-force attacks; exceeding it returns HTTP 429.
-
-Counters are stored in memory by default. With multiple Gunicorn workers, each worker keeps its own counters, so the effective limit is multiplied by the worker count. For a strict shared limit, point the limiter at a shared backend via the `RATELIMIT_STORAGE_URI` environment variable (e.g. `redis://redis:6379`).
-
-### Hashing User Passwords (recommended)
-
-Instead of storing plaintext passwords in [`config.json`](config.json:1), generate a hash and use it as the `password` value:
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| `mailcow_url` | URL of your Mailcow instance | Yes |
+| `api_key` | Your Mailcow API key | Yes |
+| `domains` | List of domains available for aliases | Yes |
+| `default_domain` | Domain pre-selected in the dropdown (defaults to the first one) | No |
+| `users` | Multi-user object (see below) | Yes |
+| `sogo_visible` | Make aliases visible in SOGo (default `true`) | No |
+| `port` | Web interface port (default `5000`; forced to `5000` in Docker) | No |
+| `altcha_enabled` | Enable the ALTCHA captcha (default `false`) | No |
+| `altcha_provider` | `local` (default) or `gatecha` | No |
+| `altcha_hmac_key` | HMAC key for the `local` provider | If local |
+| `gatecha_url` / `gatecha_api_key` | GateCHA server URL and API key | If gatecha |
+
+> The legacy single `"domain": "example.com"` format is still accepted and auto-converted to `domains`.
+
+Each entry under `users` supports `password` (required), `default_redirect` (required) and `description` (optional). See the [Multi-User Setup guide](MULTI_USER_SETUP.md) for details.
+
+### 3. Hash user passwords (recommended)
+
+Don't store plaintext passwords. Generate a hash and paste it into the user's `password` field:
 
 ```bash
 python generate_password_hash.py            # prompts for the password
-# or
 python generate_password_hash.py "mypassword"
 ```
 
-The command prints a value like `pbkdf2:sha256:...` — paste it into the user's `password` field. The application detects and verifies hashes automatically. When plaintext passwords are detected, a warning is logged at startup. See [`MULTI_USER_SETUP.md`](MULTI_USER_SETUP.md) for details.
+This prints a `pbkdf2:sha256:...` value. The app verifies hashes automatically (constant-time) and logs a warning at startup if it finds plaintext passwords. Plaintext still works for backward compatibility but is discouraged.
 
-### ALTCHA Captcha Integration
+## 🛡️ ALTCHA captcha (optional)
 
-[ALTCHA](https://altcha.org/) is a privacy-focused, GDPR-compliant alternative to traditional captchas that doesn't track users or require external services. This project ships the **ALTCHA widget v3**.
+[ALTCHA](https://altcha.org/) is a privacy-focused, GDPR-compliant captcha (no tracking, self-hosted verification). This project ships the **ALTCHA widget v3** and supports two providers via `altcha_provider`.
 
-The captcha can run with one of two providers, selected via `altcha_provider` in [`config.json`](config.json:1):
+**`local`** — challenges generated and verified by this app:
 
-- **`local`** (default): challenges are generated and verified by this app using a local HMAC key.
-- **`gatecha`**: challenge generation and verification are delegated to a self-hosted [GateCHA](https://gatecha.org/) server ([source](https://github.com/Upellift99/GateCHA)) — useful to centralize/decouple captcha across several sites.
+```bash
+head -c32 /dev/urandom | base64   # generate an HMAC key
+```
+```json
+{ "altcha_enabled": true, "altcha_provider": "local", "altcha_hmac_key": "<the key>" }
+```
 
-#### Option A — Local provider
-
-1. **Generate an HMAC key**:
-   ```bash
-   # Generate a secure random key
-   head -c32 /dev/urandom | base64
-   ```
-
-2. **Configure in [`config.json`](config.json:1)**:
-   ```json
-   {
-     "altcha_enabled": true,
-     "altcha_provider": "local",
-     "altcha_hmac_key": "your_generated_base64_key_here"
-   }
-   ```
-
-3. **Restart the application** to apply changes
-
-#### Option B — GateCHA provider
-
-Delegate the captcha to a self-hosted [GateCHA](https://gatecha.org/) server. Create an API key in the GateCHA dashboard, then:
+**`gatecha`** — delegate to a self-hosted [GateCHA](https://gatecha.org/) server ([source](https://github.com/Upellift99/GateCHA)), handy to centralize captcha across several sites:
 
 ```json
 {
@@ -683,222 +146,64 @@ Delegate the captcha to a self-hosted [GateCHA](https://gatecha.org/) server. Cr
 }
 ```
 
-The widget fetches its challenge directly from `GET {gatecha_url}/api/v1/challenge?apiKey=...`, and this app verifies solutions server-side via `POST {gatecha_url}/api/v1/verify?apiKey=...`. The local `altcha_hmac_key` is not used in this mode.
+In `gatecha` mode the widget fetches its challenge from `GET {gatecha_url}/api/v1/challenge?apiKey=...` and this app verifies solutions via `POST {gatecha_url}/api/v1/verify?apiKey=...`; the local HMAC key is unused.
 
-#### ALTCHA Features
+## 🎯 Usage
 
-- **Privacy-focused**: No tracking, no external dependencies
-- **GDPR compliant**: Respects user privacy
-- **Lightweight**: Minimal impact on page load times
-- **Accessible**: Works with screen readers and assistive technologies
-- **Self-hosted**: All verification happens on your server
+1. Open the app and log in with your user password (and solve the captcha if enabled).
+2. Type a service name (e.g. `supabase`), pick a domain, check the redirect address.
+3. Click **Create Alias** — you get something like `supabase1234@example.com`, with a copy button and QR code.
 
-#### How ALTCHA Works
+All mail to that alias now lands in your redirect inbox, and you know which service leaked your address.
 
-1. Server generates a cryptographic challenge
-2. Client's browser solves the challenge using JavaScript
-3. Solution is verified server-side using HMAC
-4. No personal data is collected or transmitted
+### REST API
 
-### General Security Recommendations
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/create-alias` | Create an alias (`{"alias": "...", "redirectTo": "..."}`) |
+| `POST` | `/api/auth` | Authenticate (`{"password": "...", "altcha": "..."}`) — rate-limited |
+| `GET` | `/api/config` | Public config (domains, version, captcha settings) |
+| `GET` | `/api/status` | Health/connectivity to Mailcow |
+| `GET` | `/api/altcha/challenge` | ALTCHA challenge (local provider) |
 
-- **Protect your API key**: Never share it and store it securely
-- **Strong passwords**: Use a secure access password, and store it hashed (`python generate_password_hash.py`)
-- **Network access**: Limit application access (firewall, VPN, etc.)
-- **HTTPS**: Use a reverse proxy with SSL in production
-- **Regular updates**: Keep dependencies and system updated
+```bash
+curl -X POST http://localhost:5000/api/create-alias \
+  -H "Content-Type: application/json" \
+  -d '{"alias": "github5678@example.com", "redirectTo": "you@example.com"}'
+```
 
-### Secure Deployment
+## 🔒 Security
 
-For production use, consider:
+- **Hashed passwords** (Werkzeug, constant-time) — see [hashing](#3-hash-user-passwords-recommended).
+- **Login rate limiting**: `/api/auth` is capped (default **10/min, 50/hour per IP**); exceeding it returns HTTP 429. Counters are in memory by default — with several Gunicorn workers each keeps its own, so set `RATELIMIT_STORAGE_URI` (e.g. `redis://redis:6379`) for a strict shared limit.
+- **Optional ALTCHA captcha** against automated abuse.
+- **Read-only config mount** and a **non-root** container user (UID 1000).
+- **Recommendations**: keep your API key secret, use strong (hashed) passwords, put it behind a reverse proxy with HTTPS, restrict network access, and keep the image updated (`docker compose pull`).
 
-1. **Nginx reverse proxy** with SSL
-2. **Strong access password** (minimum 12 characters)
-3. **Enable ALTCHA** for additional protection
-4. **IP restriction** if possible
-5. **Environment variables** for sensitive configuration
-6. **Regular security audits**
+## 🧪 Tests & development
+
+```bash
+pip install -r requirements-dev.txt
+pytest -q
+```
+
+The suite covers password verification, configuration, the API endpoints and rate limiting, and runs in CI on every push and pull request.
 
 ## 🐛 Troubleshooting
 
-### Common Errors
-
-**"Invalid configuration"**
-- Check that [`config.json`](config.json:1) exists and contains all required parameters
-- Ensure the file is properly mounted in the Docker container
-
-**"Unable to connect to Mailcow"**
-- Check the Mailcow URL in the configuration
-- Test network connectivity from the container
-- Verify that the Mailcow API is enabled
-- For Docker: verify that the container can access the external URL
-
-**"API authentication error"**
-- Check the API key in the configuration
-- Make sure the key has the right permissions
-- Test the API key directly with curl
-
-**"This alias already exists"**
-- The generated alias already exists, try with another service name
-
-**"ALTCHA verification failed"**
-- Ensure `altcha_enabled` is set to `true` in configuration
-- Verify the `altcha_hmac_key` is properly configured
-- Check that the ALTCHA widget loads correctly in the browser
-- Ensure JavaScript is enabled in the browser
-
-**"ALTCHA not configured"**
-- Set `altcha_enabled: true` in [`config.json`](config.json:1)
-- Generate and configure a valid `altcha_hmac_key`
-- Restart the application after configuration changes
-
-**"Authentication required" or "Access denied"**
-- Check the user passwords in the `users` section of your configuration
-- Ensure you're entering the correct password for your user
-- Verify that your user exists in the `users` configuration
-- Clear browser cache and cookies if issues persist
-
-**"Parameter 'domain' missing" or "Parameter 'domains' missing"**
-- This usually happens when the Docker container is running an old version
-- Solution: pull the latest published image
-  ```bash
-  docker compose pull
-  docker compose up -d
-  ```
-- Ensure your `config.json` has either `domain` (legacy) or `domains` (new format)
-- The new code automatically converts the old `domain` format to the new `domains` format
-
-### Docker Troubleshooting
-
-**Container won't start**
-```bash
-# Check startup logs
-docker compose logs mailcow-alias-generator
-
-# Verify configuration
-docker compose config
-
-# Pull the latest image
-docker compose pull
-```
-
-**Permission issues**
-```bash
-# Check file permissions
-ls -la config.json logs/
-
-# Fix permissions if needed
-chmod 644 config.json
-chmod -R 755 logs/
-```
-
-**Container keeps restarting**
-```bash
-# Check health checks
-docker inspect mailcow-alias-generator | grep -A 10 Health
-
-# Temporarily disable health check
-# Comment out healthcheck section in docker-compose.yml
-```
-
-**Network issues**
-```bash
-# Test connectivity from container
-docker compose exec mailcow-alias-generator curl -I https://your-mailcow.example.com
-
-# Check Docker networks
-docker network ls
-docker network inspect mailcow-alias-generator_mailcow-alias-net
-```
-
-### Logs
-
-#### Application Logs
-```bash
-# Via Docker Compose
-docker compose logs -f mailcow-alias-generator
-
-# Logs inside container
-docker compose exec mailcow-alias-generator tail -f /app/logs/mailcow_alias.log
-
-# Logs on host (if volume mounted)
-tail -f ./logs/mailcow_alias.log
-```
-
-#### Available Logs
-- [`logs/mailcow_alias.log`](logs/mailcow_alias.log:1): Application logs
-- [`logs/alias_log.json`](logs/alias_log.json:1): Created aliases history
-
-### API Testing
+| Symptom | What to check |
+|---------|---------------|
+| *Invalid configuration* | `config.json` exists, is valid JSON, and is mounted into the container |
+| *Unable to connect to Mailcow* | `mailcow_url` reachable from the container, Mailcow API enabled |
+| *API authentication error* | `api_key` is correct and has `alias` read/write permission |
+| *ALTCHA verification failed* | `altcha_enabled` is `true` and the provider is configured (HMAC key or GateCHA URL/key) |
+| *Invalid password* | the password matches a `users` entry (and its hash, if hashed) |
 
 ```bash
-# Test connection (replace 5000 with your configured port)
-curl http://localhost:5000/api/status
-
-# Test from inside container
-docker compose exec mailcow-alias-generator curl http://localhost:5000/api/status
-
-# Create a test alias
-curl -X POST http://localhost:5000/api/create-alias \
-  -H "Content-Type: application/json" \
-  -d '{"alias": "test1234@example.com", "redirectTo": "user@example.com"}'
+docker compose logs -f mailcow-alias-generator   # follow logs
+curl -f http://localhost:5000/api/status         # health check
 ```
-
-### Debug Mode
-
-To enable debug mode:
-
-```yaml
-# In docker-compose.yml
-environment:
-  - FLASK_ENV=development
-  - FLASK_DEBUG=1
-```
-
-Then restart:
-```bash
-docker compose restart
-```
-
-## 📝 Usage Example
-
-1. **Sign up for a new service** (e.g., Supabase)
-2. **Open the interface**: `http://localhost:5000` (or your configured port)
-3. **Enter your user password** (e.g., admin password)
-4. **Complete the ALTCHA captcha** (if enabled)
-5. **Enter**: `supabase`
-6. **Select a domain**: Choose from the dropdown (e.g., `example.com` or `example2.com`)
-7. **Generated preview**: `supabase6789@example.com` (updates based on selected domain)
-8. **Verify redirect address**: Shows your personal default (e.g., `admin@example.com`)
-9. **Click**: "Create Alias"
-10. **Use the alias** for Supabase registration
-
-Now, all emails from Supabase will arrive at your personal redirect address but you'll know they come from Supabase thanks to the alias!
-
-### Multi-User Features in Action
-
-- **Individual Authentication**: Each user has their own password
-- **Personal Redirect Addresses**: Each user sees their own default redirect
-- **User Identification**: Interface shows which user is currently logged in
-- **Isolated Experience**: Each user has their personalized settings
-
-### Security Features in Action
-
-- **Multi-User Password Protection**: Each user authenticates independently
-- **ALTCHA Captcha**: Protects against automated abuse while respecting privacy
-- **Session Management**: Keeps you logged in during your session
-- **Secure Configuration**: Sensitive settings are stored server-side only
-
-## 🤝 Support
-
-In case of problems:
-1. Check the logs in `mailcow_alias.log`
-2. Test the connection with `/api/status`
-3. Verify the Mailcow configuration
-4. Consult the Mailcow API documentation
 
 ## 📄 License
 
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
-
-This means you can freely use, modify, and distribute this software, but any derivative works must also be licensed under GPL v3.0.
+Licensed under the **GNU General Public License v3.0** — see [LICENSE](LICENSE). You may use, modify and redistribute it, but derivative works must also be GPL-3.0.
