@@ -1,6 +1,15 @@
 # 🔗 Mailcow Alias Generator
 
+[![CI](https://github.com/Upellift99/mailcow-alias-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/Upellift99/mailcow-alias-generator/actions/workflows/ci.yml)
+[![Publish Docker image](https://github.com/Upellift99/mailcow-alias-generator/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/Upellift99/mailcow-alias-generator/actions/workflows/docker-publish.yml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.1-000000.svg?logo=flask)](https://flask.palletsprojects.com/)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
+
 A simple web tool to automate email alias creation via the Mailcow API. Perfect for quickly creating dedicated aliases for each service (e.g., `supabase1234@patopesto.com`).
+
+📦 **Repository**: [github.com/Upellift99/mailcow-alias-generator](https://github.com/Upellift99/mailcow-alias-generator)
 
 ## ✨ Features
 
@@ -31,7 +40,7 @@ Docker greatly simplifies installation and deployment. No Python installation re
 
 1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Upellift99/mailcow-alias-generator.git
    cd mailcow-alias-generator
    ```
 
@@ -340,7 +349,7 @@ Example user configuration:
 
 ```bash
 # 1. Clone and configure
-git clone <repository-url>
+git clone https://github.com/Upellift99/mailcow-alias-generator.git
 cd mailcow-alias-generator
 cp config.sample.json config.json
 
