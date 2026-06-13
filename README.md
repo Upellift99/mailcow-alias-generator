@@ -79,7 +79,7 @@ Docker greatly simplifies installation and deployment. No Python installation re
    }
    ```
 
-4. **Start with Docker Compose**:
+4. **Start with Docker Compose** (pulls the pre-built image from GHCR — no local build needed):
    ```bash
    docker compose up -d
    ```
@@ -92,12 +92,13 @@ Docker greatly simplifies installation and deployment. No Python installation re
 
 6. **Access the application** at `http://localhost:5000`
 
-> 💡 **Tip**: After updating the code (git pull), rebuild the image to apply changes:
+> 💡 **Tip**: To update to the latest published image:
 >    ```bash
->    docker compose down
->    docker compose build --no-cache
+>    docker compose pull
 >    docker compose up -d
 >    ```
+> Prefer to build from your local source instead? Edit `docker-compose.yml` (swap
+> `image:` for `build: .`) and run `docker compose up -d --build`.
 
 > 💡 **Tip**: Check the [🐳 Docker Usage](#-docker-usage) section for advanced commands and production configuration.
 
@@ -345,6 +346,16 @@ Example user configuration:
 - **Health checks**: Automatic application health monitoring
 - **Security**: Runs with non-root user
 
+### Pre-built image (GHCR)
+
+A ready-to-use image is published to the GitHub Container Registry on every push to `main` and on tagged releases:
+
+```bash
+docker pull ghcr.io/upellift99/mailcow-alias-generator:latest
+```
+
+Available tags: `latest`, the branch name (`main`), semantic version tags for releases (e.g. `1.2`, `1.2.3`), and a commit SHA tag (`sha-xxxxxxx`). The `docker-compose.yml` in this repository already uses this image by default.
+
 ### Quick Start with Docker Compose (Recommended)
 
 ```bash
@@ -382,8 +393,8 @@ docker compose restart
 # Stop the application
 docker compose down
 
-# Rebuild image (after changes)
-docker compose build --no-cache
+# Update to the latest published image
+docker compose pull
 docker compose up -d
 
 # View container status
@@ -396,8 +407,8 @@ docker compose exec mailcow-alias-generator /bin/bash
 ### Docker Standalone Commands
 
 ```bash
-# Build the image
-docker build -t mailcow-alias-generator .
+# Pull the pre-built image from GHCR (or build locally: docker build -t ghcr.io/upellift99/mailcow-alias-generator .)
+docker pull ghcr.io/upellift99/mailcow-alias-generator:latest
 
 # Run with custom port
 docker run -d \
@@ -406,7 +417,7 @@ docker run -d \
   -v $(pwd)/config.json:/app/config.json:ro \
   -v $(pwd)/logs:/app/logs \
   --restart unless-stopped \
-  mailcow-alias-generator
+  ghcr.io/upellift99/mailcow-alias-generator:latest
 
 # Check container status
 docker ps
@@ -562,9 +573,8 @@ http {
 # Backup logs
 docker cp mailcow-alias-generator:/app/logs ./backup-logs
 
-# Update application
-git pull
-docker compose build --no-cache
+# Update application (pull the latest published image)
+docker compose pull
 docker compose up -d
 
 # Clean unused images
@@ -714,11 +724,10 @@ For production use, consider:
 - Clear browser cache and cookies if issues persist
 
 **"Parameter 'domain' missing" or "Parameter 'domains' missing"**
-- This usually happens after a code update when the Docker container is using an old version
-- Solution: Rebuild the Docker image to apply the latest code changes
+- This usually happens when the Docker container is running an old version
+- Solution: pull the latest published image
   ```bash
-  docker compose down
-  docker compose build --no-cache
+  docker compose pull
   docker compose up -d
   ```
 - Ensure your `config.json` has either `domain` (legacy) or `domains` (new format)
@@ -734,8 +743,8 @@ docker compose logs mailcow-alias-generator
 # Verify configuration
 docker compose config
 
-# Rebuild image
-docker compose build --no-cache
+# Pull the latest image
+docker compose pull
 ```
 
 **Permission issues**

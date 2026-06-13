@@ -1,6 +1,10 @@
 services:
   mailcow-alias-generator:
-    build: .
+    # Use the pre-built image published to GitHub Container Registry.
+    image: ghcr.io/upellift99/mailcow-alias-generator:latest
+    # To build locally instead (e.g. for development), comment out the line
+    # above and uncomment the line below, then run `docker compose up -d --build`.
+    # build: .
     container_name: mailcow-alias-generator
     ports:
       - "${HOST_PORT:-5000}:5000"  # Host:Container port mapping (container always uses 5000)
