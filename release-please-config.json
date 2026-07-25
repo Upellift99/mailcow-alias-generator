@@ -6,6 +6,7 @@
       "package-name": "mailcow-alias-generator",
       "changelog-path": "CHANGELOG.md",
       "include-component-in-tag": false,
+      "pull-request-title-pattern": "chore: release ${version}",
       "extra-files": ["app.py"],
       "changelog-sections": [
         { "type": "feat", "section": "Features" },

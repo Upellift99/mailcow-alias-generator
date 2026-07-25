@@ -20,6 +20,14 @@ jobs:
   publish:
     name: Build & push to GHCR
     runs-on: ubuntu-latest
+    # A release lands on main as a squashed "chore: release X.Y.Z" commit, which
+    # would trigger this workflow here *and* through the Release workflow's
+    # workflow_call — the same commit built twice. Let the release path win: it
+    # publishes these same tags plus the semver ones.
+    if: >-
+      github.event_name != 'push'
+      || github.ref != 'refs/heads/main'
+      || !startsWith(github.event.head_commit.message, 'chore: release ')
     permissions:
       contents: read
       packages: write
