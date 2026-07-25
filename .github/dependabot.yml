@@ -1,4 +1,8 @@
 version: 2
+
+# Commit prefixes drive release-please: only `fix` and `feat` cut a release.
+# Runtime dependencies ship inside the published image, so bumping one warrants
+# a patch release; dev tooling and CI actions do not.
 updates:
   - package-ecosystem: pip
     directory: "/"
@@ -7,6 +11,9 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - dependencies
+    commit-message:
+      prefix: "fix"          # requirements.txt     -> patch release
+      prefix-development: "chore"  # requirements-dev.txt -> no release
 
   - package-ecosystem: docker
     directory: "/"
@@ -14,6 +21,8 @@ updates:
       interval: weekly
     labels:
       - dependencies
+    commit-message:
+      prefix: "fix"          # base image ships too -> patch release
 
   - package-ecosystem: github-actions
     directory: "/"
@@ -21,3 +30,5 @@ updates:
       interval: weekly
     labels:
       - dependencies
+    commit-message:
+      prefix: "ci"           # never shipped -> no release
