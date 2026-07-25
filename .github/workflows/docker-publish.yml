@@ -24,8 +24,14 @@ jobs:
     # would trigger this workflow here *and* through the Release workflow's
     # workflow_call — the same commit built twice. Let the release path win: it
     # publishes these same tags plus the semver ones.
+    #
+    # `inputs.tag` is the escape hatch, and it is load-bearing: a called
+    # workflow inherits the caller's event context, so on the release push the
+    # other three conditions are all false here too, and without it the release
+    # path skips itself and no image is published at all.
     if: >-
-      github.event_name != 'push'
+      inputs.tag != ''
+      || github.event_name != 'push'
       || github.ref != 'refs/heads/main'
       || !startsWith(github.event.head_commit.message, 'chore: release ')
     permissions:
