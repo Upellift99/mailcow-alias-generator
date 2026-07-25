@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: Maintain release PR
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v5
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  # The release tag is pushed with GITHUB_TOKEN, and GitHub does not run
+  # workflows for refs created that way — so the `tags: ["v*"]` trigger in
+  # docker-publish.yml never fires for an automated release. Call that workflow
+  # directly instead, which is also why it accepts a `tag` input.
+  publish-release-image:
+    name: Publish release image
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/docker-publish.yml
+    with:
+      tag: ${{ needs.release-please.outputs.tag_name }}
