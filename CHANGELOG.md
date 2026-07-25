@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.2...v1.0.3) (2026-07-25)
+
+
+### Bug Fixes
+
+* **ci:** retry the Docker Hub pulls in both workflows ([#27](https://github.com/Upellift99/mailcow-alias-generator/issues/27)) ([62271a1](https://github.com/Upellift99/mailcow-alias-generator/commit/62271a1c9c6c59acf6234f74c88ebf706bcc1b30))
+
 ## [1.0.2](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.1...v1.0.2) (2026-07-25)
 
 
