@@ -146,14 +146,12 @@ def test_verify_altcha_dispatches_to_gatecha(monkeypatch):
 
 LOCAL_CONFIG = {"altcha_provider": "local", "altcha_hmac_key": "k" * 32}
 
-# Must match the max_number passed in create_altcha_challenge.
-MAX_NUMBER = 10000
-
 
 def solve(challenge):
     """Solve a challenge the way the browser widget does, returning the payload."""
     solution = solve_challenge_v1(
-        challenge.challenge, challenge.salt, challenge.algorithm, MAX_NUMBER, 0
+        challenge.challenge, challenge.salt, challenge.algorithm,
+        app_module.ALTCHA_MAX_NUMBER, 0,
     )
     assert solution is not None, "challenge was not solvable within max_number"
     return {
