@@ -1,6 +1,11 @@
 """Tests for the Mailcow Alias Generator Flask app."""
 
+import base64
+import json
+from types import SimpleNamespace
+
 import pytest
+from altcha import solve_challenge_v1
 from werkzeug.security import generate_password_hash
 
 import app as app_module
@@ -132,6 +137,102 @@ def test_verify_altcha_dispatches_to_gatecha(monkeypatch):
     monkeypatch.setattr(app_module, "verify_altcha_via_gatecha", fake_gatecha)
     ok, _ = app_module.verify_altcha_solution("PAYLOAD", {"altcha_provider": "gatecha"})
     assert ok is True and called["p"] == "PAYLOAD"
+
+
+# --- local ALTCHA provider --------------------------------------------------
+# These exercise the real altcha library rather than a mock: the widget speaks
+# the v1 protocol, so a library upgrade that changes the v1 wire format or the
+# verify semantics must fail here rather than only in the Docker smoke test.
+
+LOCAL_CONFIG = {"altcha_provider": "local", "altcha_hmac_key": "k" * 32}
+
+# Must match the max_number passed in create_altcha_challenge.
+MAX_NUMBER = 10000
+
+
+def solve(challenge):
+    """Solve a challenge the way the browser widget does, returning the payload."""
+    solution = solve_challenge_v1(
+        challenge.challenge, challenge.salt, challenge.algorithm, MAX_NUMBER, 0
+    )
+    assert solution is not None, "challenge was not solvable within max_number"
+    return {
+        "algorithm": challenge.algorithm,
+        "challenge": challenge.challenge,
+        "salt": challenge.salt,
+        "signature": challenge.signature,
+        "number": solution.number,
+    }
+
+
+def encode(payload):
+    return base64.b64encode(json.dumps(payload).encode()).decode()
+
+
+def test_create_altcha_challenge_local():
+    challenge, error = app_module.create_altcha_challenge(LOCAL_CONFIG)
+    assert error is None
+    # The fields /api/altcha/challenge serialises must all be present.
+    assert challenge.algorithm == "SHA-256"
+    assert challenge.challenge and challenge.salt and challenge.signature
+
+
+def test_create_altcha_challenge_without_key():
+    challenge, error = app_module.create_altcha_challenge({"altcha_provider": "local"})
+    assert challenge is None and error == "ALTCHA not configured"
+
+
+def test_verify_altcha_local_round_trip():
+    challenge, _ = app_module.create_altcha_challenge(LOCAL_CONFIG)
+    ok, message = app_module.verify_altcha_solution(encode(solve(challenge)), LOCAL_CONFIG)
+    assert ok is True, message
+
+
+def test_verify_altcha_rejects_wrong_hmac_key():
+    challenge, _ = app_module.create_altcha_challenge(LOCAL_CONFIG)
+    payload = encode(solve(challenge))
+    ok, _ = app_module.verify_altcha_solution(payload, dict(LOCAL_CONFIG, altcha_hmac_key="x" * 32))
+    assert ok is False
+
+
+def test_verify_altcha_rejects_tampered_number():
+    challenge, _ = app_module.create_altcha_challenge(LOCAL_CONFIG)
+    payload = solve(challenge)
+    payload["number"] += 1
+    ok, _ = app_module.verify_altcha_solution(encode(payload), LOCAL_CONFIG)
+    assert ok is False
+
+
+def test_verify_altcha_rejects_garbage_payload():
+    ok, _ = app_module.verify_altcha_solution("not-base64-json", LOCAL_CONFIG)
+    assert ok is False
+
+
+# --- /api/altcha/challenge --------------------------------------------------
+
+def test_altcha_challenge_endpoint_serves_solvable_challenge(client, monkeypatch):
+    cfg = dict(TEST_CONFIG, altcha_enabled=True)
+    monkeypatch.setattr(app_module, "load_config", lambda: cfg)
+
+    data = client.get("/api/altcha/challenge").get_json()
+    assert set(data) == {"algorithm", "challenge", "salt", "signature"}
+
+    # What the endpoint serves must round-trip through the verifier.
+    served = SimpleNamespace(**data)
+    ok, message = app_module.verify_altcha_solution(encode(solve(served)), cfg)
+    assert ok is True, message
+
+
+def test_altcha_challenge_endpoint_disabled(client):
+    # TEST_CONFIG has altcha_enabled False.
+    assert client.get("/api/altcha/challenge").status_code == 400
+
+
+def test_altcha_challenge_endpoint_rejected_in_gatecha_mode(client, monkeypatch):
+    cfg = dict(TEST_CONFIG, altcha_enabled=True, altcha_provider="gatecha",
+               gatecha_url="https://gate.test/", gatecha_api_key="gk_abc")
+    monkeypatch.setattr(app_module, "load_config", lambda: cfg)
+    assert client.get("/api/altcha/challenge").status_code == 400
 
 
 # --- /api/auth --------------------------------------------------------------
