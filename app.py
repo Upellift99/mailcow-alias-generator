@@ -15,7 +15,11 @@ from flask_limiter.util import get_remote_address
 from werkzeug.security import check_password_hash
 import logging
 from datetime import datetime, timedelta
-from altcha import ChallengeOptions, create_challenge, verify_solution
+# The bundled widget (altcha.js, v3.1.0) speaks the ALTCHA v1 challenge
+# protocol. altcha-python 2.x made the v2 protocol the default and moved v1
+# behind the *_v1 names, so pin the v1 API explicitly rather than relying on
+# the unsuffixed helpers.
+from altcha import ChallengeOptionsV1, create_challenge_v1, verify_solution_v1
 
 __version__ = "1.0.0"
 
@@ -275,14 +279,14 @@ def create_altcha_challenge(config):
             return None, "ALTCHA not configured"
         
         # Create challenge options
-        options = ChallengeOptions(
+        options = ChallengeOptionsV1(
             expires=datetime.now() + timedelta(hours=1),
             max_number=10000,  # Maximum random number
             hmac_key=altcha_hmac_key,
         )
-        
+
         # Create the challenge
-        challenge = create_challenge(options)
+        challenge = create_challenge_v1(options)
         logger.info("ALTCHA challenge created successfully")
         
         return challenge, None
@@ -342,7 +346,7 @@ def verify_altcha_solution(payload, config, check_expires=True):
             return False, "ALTCHA not configured"
         
         # Verify the solution
-        ok, err = verify_solution(payload, altcha_hmac_key, check_expires=check_expires)
+        ok, err = verify_solution_v1(payload, altcha_hmac_key, check_expires=check_expires)
         
         if err:
             logger.warning(f"ALTCHA verification error: {err}")
