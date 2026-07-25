@@ -23,6 +23,11 @@ from altcha import ChallengeOptionsV1, create_challenge_v1, verify_solution_v1
 
 __version__ = "1.0.0"
 
+# Upper bound for the ALTCHA challenge's random number. The widget solves the
+# challenge by brute force up to this value, so raising it costs the client
+# more work. Tests solve challenges with the same bound, hence the constant.
+ALTCHA_MAX_NUMBER = 10000
+
 # Logging configuration
 # In Docker, we only log to console (best practice for containers)
 if os.getenv('DOCKER_CONTAINER'):
@@ -281,7 +286,7 @@ def create_altcha_challenge(config):
         # Create challenge options
         options = ChallengeOptionsV1(
             expires=datetime.now() + timedelta(hours=1),
-            max_number=10000,  # Maximum random number
+            max_number=ALTCHA_MAX_NUMBER,
             hmac_key=altcha_hmac_key,
         )
 
