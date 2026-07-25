@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.1...v1.0.2) (2026-07-25)
+
+
+### Bug Fixes
+
+* **ci:** publish the image on release again ([#25](https://github.com/Upellift99/mailcow-alias-generator/issues/25)) ([70340d4](https://github.com/Upellift99/mailcow-alias-generator/commit/70340d41a37f8a5a7765adc6685b18864c12de66))
+
 ## [1.0.1](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.0...v1.0.1) (2026-07-25)
 
 
