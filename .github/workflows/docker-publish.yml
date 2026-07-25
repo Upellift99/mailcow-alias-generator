@@ -44,7 +44,18 @@ jobs:
           # Empty for push/dispatch, which checks out the triggering ref.
           ref: ${{ inputs.tag }}
 
+      # This job reaches Docker Hub twice — for the buildkit image here, and for
+      # the base image during the build — and an unauthenticated pull there is
+      # rate-limited and occasionally times out. That failed the v1.0.2 release
+      # and needed a manual re-run, so both steps get one retry. If the retry
+      # fails too the job fails as it always did.
       - name: Set up Docker Buildx
+        id: buildx
+        continue-on-error: true
+        uses: docker/setup-buildx-action@v4
+
+      - name: Set up Docker Buildx (retry)
+        if: steps.buildx.outcome == 'failure'
         uses: docker/setup-buildx-action@v4
 
       - name: Log in to GitHub Container Registry
@@ -67,6 +78,19 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push
+        id: build
+        continue-on-error: true
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push (retry)
+        if: steps.build.outcome == 'failure'
         uses: docker/build-push-action@v7
         with:
           context: .
