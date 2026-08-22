@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 # the unsuffixed helpers.
 from altcha import ChallengeOptionsV1, create_challenge_v1, verify_solution_v1
 
-__version__ = "1.0.4"  # x-release-please-version
+__version__ = "1.0.5"  # x-release-please-version
 
 # Upper bound for the ALTCHA challenge's random number. The widget solves the
 # challenge by brute force up to this value, so raising it costs the client
