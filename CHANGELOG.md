@@ -7,6 +7,20 @@
 
 * bump gunicorn from 26.0.0 to 26.1.0 ([#31](https://github.com/Upellift99/mailcow-alias-generator/issues/31)) ([5c4c36a](https://github.com/Upellift99/mailcow-alias-generator/commit/5c4c36af136123234309b5406822b51264bf99d0))
 
+Gunicorn 26.1.0 is a routine upstream patch, **not a security fix for this image**.
+The "Security" heading in its release notes raises the version floors of gunicorn's
+*optional* extras — tornado, h2, setuptools, pymdown-extensions, httpx — and none of
+them are installed here: the container runs plain sync workers (`gunicorn --workers 2`),
+so nothing in that section is reachable. No urgent redeploy is warranted.
+
+The one upstream change that does reach this deployment is WSGI body framing on
+HEAD and 1xx/204/304 responses: `Content-Length` is now stripped per RFC 9110 §6.4.2
+and body bytes are dropped instead of being written. The app returns JSON on normal
+paths, so this only affects the health-check and preflight edges. Gunicorn also drops
+`packaging` as a runtime dependency, leaving one fewer package in the image.
+
+Upgrading needs no configuration change and nothing new to watch.
+
 ## [1.0.4](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.3...v1.0.4) (2026-08-01)
 
 
