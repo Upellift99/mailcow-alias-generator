@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Docker startup script for Mailcow alias generator
-echo "🚀 Starting Mailcow Alias Generator with Gunicorn..."
+# Docker startup script for mailcow Alias Generator
+echo "🚀 Starting mailcow Alias Generator with Gunicorn..."
 
 # Container always uses port 5000 internally - FORCED in Docker mode
 DOCKER_PORT=5000

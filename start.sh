@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Startup script for Mailcow alias generator
+# Startup script for mailcow Alias Generator
 # Usage: ./start.sh
 
-echo "🔗 Mailcow Alias Generator"
+echo "🔗 mailcow Alias Generator"
 echo "=========================="
 
 # Check if Python is installed
@@ -27,9 +27,9 @@ if [ ! -f "config.json" ]; then
         cp config.sample.json config.json
         echo "✅ config.json file created from config.sample.json"
         echo ""
-        echo "🔧 IMPORTANT: Edit config.json with your Mailcow settings:"
-        echo "   - mailcow_url: URL of your Mailcow instance"
-        echo "   - api_key: Your Mailcow API key"
+        echo "🔧 IMPORTANT: Edit config.json with your mailcow settings:"
+        echo "   - mailcow_url: URL of your mailcow instance"
+        echo "   - api_key: Your mailcow API key"
         echo "   - domain: Your domain for aliases"
         echo "   - default_redirect: Default redirect address"
         echo ""
@@ -60,13 +60,13 @@ fi
 echo "🔧 Checking configuration..."
 if grep -q "YOUR_MAILCOW_API_KEY" config.json; then
     echo "❌ Configuration not completed"
-    echo "🔧 Please edit config.json with your real Mailcow settings"
+    echo "🔧 Please edit config.json with your real mailcow settings"
     exit 1
 fi
 
 if grep -q "mail.example.com" config.json; then
-    echo "❌ Mailcow URL not configured"
-    echo "🔧 Please edit config.json with your real Mailcow URL"
+    echo "❌ mailcow URL not configured"
+    echo "🔧 Please edit config.json with your real mailcow URL"
     exit 1
 fi
 

@@ -1,4 +1,4 @@
-# 🔗 Mailcow Alias Generator
+# 🔗 mailcow Alias Generator
 
 [![CI](https://github.com/Upellift99/mailcow-alias-generator/actions/workflows/ci.yml/badge.svg)](https://github.com/Upellift99/mailcow-alias-generator/actions/workflows/ci.yml)
 [![Publish Docker image](https://github.com/Upellift99/mailcow-alias-generator/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/Upellift99/mailcow-alias-generator/actions/workflows/docker-publish.yml)
@@ -8,7 +8,7 @@
 [![Release](https://img.shields.io/github/v/release/Upellift99/mailcow-alias-generator?label=release&color=blue)](https://github.com/Upellift99/mailcow-alias-generator/releases)
 [![GHCR image](https://img.shields.io/badge/ghcr.io-image-2496ED?logo=docker&logoColor=white)](https://github.com/Upellift99/mailcow-alias-generator/pkgs/container/mailcow-alias-generator)
 
-A simple, self-hosted web tool to create email aliases via the [Mailcow](https://mailcow.email/) API. Perfect for giving every service its own throwaway alias (e.g. `supabase1234@example.com`) that redirects to your real inbox.
+A simple, self-hosted web tool to create email aliases via the [mailcow](https://mailcow.email/) API. Perfect for giving every service its own throwaway alias (e.g. `supabase1234@example.com`) that redirects to your real inbox.
 
 📦 **Repository**: [github.com/Upellift99/mailcow-alias-generator](https://github.com/Upellift99/mailcow-alias-generator)
 
@@ -47,7 +47,7 @@ mkdir mailcow-alias-generator && cd mailcow-alias-generator
 curl -O https://raw.githubusercontent.com/Upellift99/mailcow-alias-generator/main/docker-compose.yml
 curl -o config.json https://raw.githubusercontent.com/Upellift99/mailcow-alias-generator/main/config.sample.json
 
-# Edit config.json (Mailcow URL, API key, domains, users — see Configuration)
+# Edit config.json (mailcow URL, API key, domains, users — see Configuration)
 docker compose up -d
 ```
 
@@ -78,9 +78,9 @@ cp config.sample.json config.json   # then edit it
 
 ## 🔧 Configuration
 
-### 1. Get a Mailcow API key
+### 1. Get a mailcow API key
 
-In your Mailcow UI: **Configuration → API Access**, create a key with **read/write** on `alias` (and read on `domains` for validation). Put it in `config.json` as `api_key`.
+In your mailcow UI: **Configuration → API Access**, create a key with **read/write** on `alias` (and read on `domains` for validation). Put it in `config.json` as `api_key`.
 
 ### 2. Edit `config.json`
 
@@ -104,8 +104,8 @@ Minimal example:
 
 | Parameter | Description | Required |
 |-----------|-------------|----------|
-| `mailcow_url` | URL of your Mailcow instance | Yes |
-| `api_key` | Your Mailcow API key | Yes |
+| `mailcow_url` | URL of your mailcow instance | Yes |
+| `api_key` | Your mailcow API key | Yes |
 | `domains` | List of domains available for aliases | Yes |
 | `default_domain` | Domain pre-selected in the dropdown (defaults to the first one) | No |
 | `users` | Multi-user object (see below) | Yes |
@@ -172,7 +172,7 @@ All mail to that alias now lands in your redirect inbox, and you know which serv
 | `POST` | `/api/create-alias` | Create an alias (`{"alias": "...", "redirectTo": "..."}`) |
 | `POST` | `/api/auth` | Authenticate (`{"password": "...", "altcha": "..."}`) — rate-limited |
 | `GET` | `/api/config` | Public config (domains, version, captcha settings) |
-| `GET` | `/api/status` | Health/connectivity to Mailcow |
+| `GET` | `/api/status` | Health/connectivity to mailcow |
 | `GET` | `/api/altcha/challenge` | ALTCHA challenge (local provider) |
 
 ```bash
@@ -203,7 +203,7 @@ The suite covers password verification, configuration, the API endpoints and rat
 | Symptom | What to check |
 |---------|---------------|
 | *Invalid configuration* | `config.json` exists, is valid JSON, and is mounted into the container |
-| *Unable to connect to Mailcow* | `mailcow_url` reachable from the container, Mailcow API enabled |
+| *Unable to connect to mailcow* | `mailcow_url` reachable from the container, mailcow API enabled |
 | *API authentication error* | `api_key` is correct and has `alias` read/write permission |
 | *ALTCHA verification failed* | `altcha_enabled` is `true` and the provider is configured (HMAC key or GateCHA URL/key) |
 | *Invalid password* | the password matches a `users` entry (and its hash, if hashed) |

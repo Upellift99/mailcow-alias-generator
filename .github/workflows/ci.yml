@@ -96,7 +96,7 @@ jobs:
 
       - name: Smoke test (container boots & serves the UI)
         run: |
-          # Provide a minimal config so the app starts without a real Mailcow instance.
+          # Provide a minimal config so the app starts without a real mailcow instance.
           cp config.sample.json config.json
           docker run -d --name mag -p 5000:5000 \
             -v "$PWD/config.json:/app/config.json:ro" \
