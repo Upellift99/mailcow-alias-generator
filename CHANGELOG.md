@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.8](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.7...v1.0.8) (2026-08-29)
+
+
+### Documentation
+
+* refresh the screenshot for the lowercase header ([#38](https://github.com/Upellift99/mailcow-alias-generator/issues/38)) ([b95114c](https://github.com/Upellift99/mailcow-alias-generator/commit/b95114cff272e312cbbd21a1888ef8e4668c4b23))
+
 ## [1.0.7](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.6...v1.0.7) (2026-08-29)
 
 
