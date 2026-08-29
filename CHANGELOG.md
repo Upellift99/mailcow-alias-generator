@@ -7,6 +7,28 @@
 
 * bump gunicorn from 26.1.0 to 26.2.0 ([#34](https://github.com/Upellift99/mailcow-alias-generator/issues/34)) ([f1abe68](https://github.com/Upellift99/mailcow-alias-generator/commit/f1abe684defcdcc1baf8046f6ef6b8a15a5f6d90))
 
+Gunicorn 26.2.0 headlines a security fix, and it **does not apply to this image**.
+The advisory is the `HTTP2Request` header-policy bypass: over HTTP/2, headers were
+built straight from the stream, so an untrusted client could forge `HTTP_*` environ
+entries, set `SCRIPT_NAME` and choose `wsgi.url_scheme`. Reaching it requires
+serving HTTP/2, and this container cannot: `h2` ships only under gunicorn's
+`http2` extra, `requirements.txt` pins the bare package, and cleartext HTTP/2 is
+off by default and implemented only for the gthread, gevent and asgi workers —
+`docker-start.sh` runs plain sync workers. The `fast` extra's `gunicorn_h1c` fix
+is out of reach for the same reason. No urgent redeploy is warranted.
+
+For an HTTP/1 sync deployment the rest of the release is a refactor with no
+behaviour change. The parts of `gunicorn/http/` that this image does execute were
+reorganised so both protocols share one `HeaderPolicy` mixin — the underscore and
+`header_map` rules, duplicate `Host`, control characters in values and the
+`forwarded_allow_ips` trust gate now live in a single place rather than being
+enforced on HTTP/1 only. Those rules already applied here; what changed is that
+HTTP/2 can no longer skip them. Response writing gained an override point so the
+HTTP/2 framer can subclass it, which leaves the HTTP/1 write path as it was.
+
+The new `http2_cleartext` setting defaults to `off`, so nothing needs configuring
+and nothing new needs watching.
+
 ## [1.0.5](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.4...v1.0.5) (2026-08-22)
 
 
