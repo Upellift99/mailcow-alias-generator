@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.6](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.5...v1.0.6) (2026-08-29)
+
+
+### Bug Fixes
+
+* bump gunicorn from 26.1.0 to 26.2.0 ([#34](https://github.com/Upellift99/mailcow-alias-generator/issues/34)) ([f1abe68](https://github.com/Upellift99/mailcow-alias-generator/commit/f1abe684defcdcc1baf8046f6ef6b8a15a5f6d90))
+
 ## [1.0.5](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.4...v1.0.5) (2026-08-22)
 
 
