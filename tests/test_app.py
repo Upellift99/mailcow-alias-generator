@@ -1,4 +1,4 @@
-"""Tests for the Mailcow Alias Generator Flask app."""
+"""Tests for the mailcow Alias Generator Flask app."""
 
 import base64
 import json

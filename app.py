@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Mailcow Alias Generator
-Flask server to automatically create aliases via Mailcow API
+mailcow Alias Generator
+Flask server to automatically create aliases via mailcow API
 """
 
 import os
@@ -172,9 +172,9 @@ def load_config():
         return None
 
 def create_mailcow_alias(alias_email, redirect_to, config):
-    """Create an alias in Mailcow via API"""
+    """Create an alias in mailcow via API"""
     
-    # Mailcow API URL for aliases
+    # mailcow API URL for aliases
     api_url = f"{config['mailcow_url'].rstrip('/')}/api/v1/add/alias"
     
     # Headers for authentication
@@ -199,7 +199,7 @@ def create_mailcow_alias(alias_email, redirect_to, config):
         if response.status_code == 200:
             result = response.json()
             
-            # Handle Mailcow API response format (array of objects)
+            # Handle mailcow API response format (array of objects)
             if isinstance(result, list) and len(result) > 0:
                 first_result = result[0]
                 if first_result.get('type') == 'success':
@@ -209,7 +209,7 @@ def create_mailcow_alias(alias_email, redirect_to, config):
                     error_msg = first_result.get('msg', 'Unknown error')
                     if isinstance(error_msg, list):
                         error_msg = ' '.join(str(x) for x in error_msg)
-                    logger.error(f"Mailcow API error: {error_msg}")
+                    logger.error(f"mailcow API error: {error_msg}")
                     return False, error_msg
             # Fallback for other response formats
             elif isinstance(result, dict):
@@ -218,7 +218,7 @@ def create_mailcow_alias(alias_email, redirect_to, config):
                     return True, "Alias created successfully"
                 else:
                     error_msg = result.get('msg', 'Unknown error')
-                    logger.error(f"Mailcow API error: {error_msg}")
+                    logger.error(f"mailcow API error: {error_msg}")
                     return False, error_msg
             else:
                 logger.error(f"Unexpected API response format: {result}")
@@ -228,11 +228,11 @@ def create_mailcow_alias(alias_email, redirect_to, config):
             return False, f"HTTP error {response.status_code}"
             
     except requests.exceptions.Timeout:
-        logger.error("Timeout connecting to Mailcow")
+        logger.error("Timeout connecting to mailcow")
         return False, "Connection timeout"
     except requests.exceptions.ConnectionError:
-        logger.error("Unable to connect to Mailcow")
-        return False, "Unable to connect to Mailcow server"
+        logger.error("Unable to connect to mailcow")
+        return False, "Unable to connect to mailcow server"
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
         return False, "Unexpected error while creating the alias"
@@ -253,7 +253,7 @@ def check_alias_exists(alias_email, config):
         if response.status_code == 200:
             aliases_data = response.json()
             
-            # Handle different response formats from Mailcow API
+            # Handle different response formats from mailcow API
             if isinstance(aliases_data, list):
                 aliases = aliases_data
             elif isinstance(aliases_data, dict):
@@ -517,7 +517,7 @@ def status():
             'message': 'Invalid configuration'
         }), 500
     
-    # Test connection to Mailcow
+    # Test connection to mailcow
     try:
         api_url = f"{config['mailcow_url'].rstrip('/')}/api/v1/get/domain/all"
         headers = {'X-API-Key': config['api_key']}
@@ -535,14 +535,14 @@ def status():
         else:
             return jsonify({
                 'status': 'error',
-                'message': f'Mailcow connection error: {response.status_code}'
+                'message': f'mailcow connection error: {response.status_code}'
             }), 500
             
     except Exception as e:
-        logger.error(f"Unable to connect to Mailcow: {e}")
+        logger.error(f"Unable to connect to mailcow: {e}")
         return jsonify({
             'status': 'error',
-            'message': 'Unable to connect to Mailcow'
+            'message': 'Unable to connect to mailcow'
         }), 500
 
 @app.route('/api/config')
@@ -674,7 +674,7 @@ if __name__ == '__main__':
     config = load_config()
     port = config.get('port', 5000) if config else 5000
     
-    print("🚀 Starting Mailcow alias generator...")
+    print("🚀 Starting mailcow Alias Generator...")
     print("📝 Make sure you have configured the config.json file")
     print(f"🌐 Interface available at http://localhost:{port}")
     

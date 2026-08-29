@@ -11,14 +11,14 @@ How to submit:
   3. Move the screenshot into their images folder, or keep the absolute raw URL used here.
 -->
 
-# Mailcow Alias Generator
+# mailcow Alias Generator
 
-[Mailcow Alias Generator](https://github.com/Upellift99/mailcow-alias-generator) is a small,
+[mailcow Alias Generator](https://github.com/Upellift99/mailcow-alias-generator) is a small,
 self-hosted web app that creates email aliases through the mailcow API. It lets you give every
 service its own throwaway alias (e.g. `supabase1234@example.com`) that redirects to your real
 inbox — useful to compartmentalize signups and spot which service leaked your address.
 
-![Mailcow Alias Generator](https://raw.githubusercontent.com/Upellift99/mailcow-alias-generator/main/screenshots/alias-generator.png){ width="320" }
+![mailcow Alias Generator](https://raw.githubusercontent.com/Upellift99/mailcow-alias-generator/main/screenshots/alias-generator.png){ width="320" }
 
 ## Features
 
