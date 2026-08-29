@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.7](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.6...v1.0.7) (2026-08-29)
+
+
+### Bug Fixes
+
+* write mailcow in lowercase, as the trademark requires ([#36](https://github.com/Upellift99/mailcow-alias-generator/issues/36)) ([85bc807](https://github.com/Upellift99/mailcow-alias-generator/commit/85bc80728e43f341e781a2c6c3121b4c2f8d1712))
+
 ## [1.0.6](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.5...v1.0.6) (2026-08-29)
 
 
