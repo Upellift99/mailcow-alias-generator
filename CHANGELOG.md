@@ -7,6 +7,23 @@
 
 * write mailcow in lowercase, as the trademark requires ([#36](https://github.com/Upellift99/mailcow-alias-generator/issues/36)) ([85bc807](https://github.com/Upellift99/mailcow-alias-generator/commit/85bc80728e43f341e781a2c6c3121b4c2f8d1712))
 
+`mailcow` is a registered trademark and is always written in lowercase. The
+project wrote "Mailcow" in 43 places — the README, the interface, the startup
+banners and the code comments. This release corrects all of them.
+
+**Nothing behaves differently.** The only strings a user sees are the page
+titles, the header shown in the interface, the startup banner, and one error
+message — *Unable to connect to mailcow server* — which the README's
+troubleshooting table quotes verbatim, so both moved together. No identifier,
+JSON key, URL or configuration name changed: `mailcow_url` was already
+lowercase. Existing `config.json` files, API keys and deployments are
+unaffected, and upgrading needs nothing beyond the usual pull.
+
+The display name keeps its Title Case tail — **mailcow Alias Generator** —
+matching how the mailcow documentation registers third-party tools itself. This
+is the groundwork for submitting the project to their community-managed
+"third party apps" section, where the lowercase spelling is checked on review.
+
 ## [1.0.6](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.5...v1.0.6) (2026-08-29)
 
 
