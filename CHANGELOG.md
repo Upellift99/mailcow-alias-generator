@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.9](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.8...v1.0.9) (2026-10-10)
+
+
+### Bug Fixes
+
+* update altcha requirement from &lt;3.0.0,&gt;=2.1.0 to &gt;=2.3.0,&lt;3.0.0 ([#40](https://github.com/Upellift99/mailcow-alias-generator/issues/40)) ([cf5d508](https://github.com/Upellift99/mailcow-alias-generator/commit/cf5d50837c5bd3cb58bb9f6b539f25c4499c3caa))
+
 ## [1.0.8](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.7...v1.0.8) (2026-08-29)
 
 
