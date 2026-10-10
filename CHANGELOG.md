@@ -1,5 +1,50 @@
 # Changelog
 
+## [1.0.9](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.8...v1.0.9) (2026-10-10)
+
+
+### Bug Fixes
+
+* update altcha requirement from &lt;3.0.0,&gt;=2.1.0 to &gt;=2.3.0,&lt;3.0.0 ([#40](https://github.com/Upellift99/mailcow-alias-generator/issues/40)) ([cf5d508](https://github.com/Upellift99/mailcow-alias-generator/commit/cf5d50837c5bd3cb58bb9f6b539f25c4499c3caa))
+
+This one **is** a security fix, for one configuration: the built-in captcha
+(`altcha_enabled: true` with `altcha_provider: "local"`). Deployments that leave
+the captcha off, or delegate it to GateCHA, never run the affected code and can
+take this release at their usual pace.
+
+The requirement was already a range, so what changes is the floor — and the
+floor is what matters. The 1.0.8 image was built on 2026-08-29, when altcha
+2.1.0 was the newest release, and 2.1.0 is the last version affected by
+[GHSA-6wgr-g55c-ch37](https://github.com/altcha-org/altcha-lib-py/security/advisories/GHSA-6wgr-g55c-ch37)
+(medium). The v1 verifier read a challenge's `expires` with one parser and
+re-checked its signature with another, and the two disagreed on a salt carrying
+`expires` twice: a far-future value first satisfied the expiry check, the
+original value last still matched the signature. A solved challenge could then
+be replayed long after its one-hour lifetime. The widget bundled here speaks the
+v1 protocol, so this is exactly the path `/api/auth` goes through. It was fixed
+in altcha 2.2.0; rebuilding with a `>=2.3.0` floor guarantees the image carries
+it.
+
+**What it exposes is bounded.** The captcha only fronts the login form, and it
+is not what protects the password: the endpoint keeps its own rate limit (10
+attempts a minute, 50 an hour) and the constant-time password check, neither of
+which the bug touches. What an attacker gains is skipping the proof-of-work on
+each attempt by reusing one old solution. Nothing is bypassed beyond the captcha
+itself, no data is reachable, and there is no sign to look for in the logs — a
+replayed solution is logged like any valid one. Update at the next convenient
+pull rather than as an emergency.
+
+No alert announced this. The advisory is published on the altcha repository but
+has not reached the GitHub advisory database for the `pip` package, so
+Dependabot raised an ordinary version bump, with release notes that only mention
+the v2 API.
+
+The rest of altcha 2.2.0–2.3.0 does not apply: it aligns the v2 API with the
+JavaScript library and hardens v2 verification against malformed payloads, and
+this project calls only the v1 helpers. Nothing needs configuring, the
+`altcha_hmac_key` is unchanged, and challenges issued just before the upgrade
+still verify afterwards.
+
 ## [1.0.8](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.7...v1.0.8) (2026-08-29)
 
 
