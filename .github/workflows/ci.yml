@@ -20,8 +20,16 @@ env:
 
 jobs:
   lint:
-    name: Lint & tests
+    name: Lint & tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    # 3.15 is what the published image runs (see the Dockerfile's base image);
+    # 3.11 keeps the "run from source" path honest. Without the first, a base
+    # image bump is only covered by the smoke test below, which boots the
+    # container but runs no test.
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.15"]
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -29,7 +37,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
           cache: pip
 
       - name: Install dependencies
