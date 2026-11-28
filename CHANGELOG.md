@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.10](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.9...v1.0.10) (2026-11-28)
+
+
+### Bug Fixes
+
+* bump gunicorn from 26.2.0 to 27.0.1 ([#45](https://github.com/Upellift99/mailcow-alias-generator/issues/45)) ([8530a93](https://github.com/Upellift99/mailcow-alias-generator/commit/8530a9368e31968f9ee8ed833020669b754b97f5))
+* bump python from 3.14-slim to 3.15-slim ([#43](https://github.com/Upellift99/mailcow-alias-generator/issues/43)) ([f723654](https://github.com/Upellift99/mailcow-alias-generator/commit/f7236546ae3062c6b2272e5966ae7b4e2129ddf7))
+* update altcha requirement from &lt;3.0.0,&gt;=2.3.0 to &gt;=2.5.0,&lt;3.0.0 ([#47](https://github.com/Upellift99/mailcow-alias-generator/issues/47)) ([aad9cb1](https://github.com/Upellift99/mailcow-alias-generator/commit/aad9cb164374c917e3a55024abdeb7130f79de00))
+
 ## [1.0.9](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.8...v1.0.9) (2026-10-10)
 
 
