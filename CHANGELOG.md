@@ -9,6 +9,45 @@
 * bump python from 3.14-slim to 3.15-slim ([#43](https://github.com/Upellift99/mailcow-alias-generator/issues/43)) ([f723654](https://github.com/Upellift99/mailcow-alias-generator/commit/f7236546ae3062c6b2272e5966ae7b4e2129ddf7))
 * update altcha requirement from &lt;3.0.0,&gt;=2.3.0 to &gt;=2.5.0,&lt;3.0.0 ([#47](https://github.com/Upellift99/mailcow-alias-generator/issues/47)) ([aad9cb1](https://github.com/Upellift99/mailcow-alias-generator/commit/aad9cb164374c917e3a55024abdeb7130f79de00))
 
+A maintenance release: three dependency bumps, **none of them a security fix
+for this project**. Nothing needs configuring, and there is no reason to update
+outside your usual schedule.
+
+**altcha 2.5.0 is a security release upstream, but it exposes nothing here.**
+It closes a second way around the v1 salt check: a client could send the tail of
+the signed salt inside a string `number`, hiding signed `params` from the
+verifier, and in some setups get an expired challenge accepted. This project
+does go through the v1 verifier — it is the path `/api/auth` takes with the
+built-in captcha — but upstream names two preconditions, and neither holds:
+the challenge has to carry custom `params`, or a `salt` that already contains a
+query string. The challenges created here carry `expires` and nothing else, and
+upstream states that case is not affected. So unlike 1.0.9, this is a floor
+bump for hygiene, raised so a rebuilt image cannot fall back to an older
+altcha. The one behaviour change — a `number` that is not an integer is now
+rejected — does not touch the bundled widget, which sends its solution as an integer.
+As before, no alert announced any of this: the fix is described in altcha's
+release notes only.
+
+**gunicorn 27 is a major version with one breaking change**, and it is unlikely
+to reach you: a request whose `Transfer-Encoding` does not end in `chunked`
+(`gzip` or `identity` alone) is now answered with 400 instead of being read
+until the connection closes. Browsers and the usual reverse proxies never send
+that. The rest of 27.0.x tightens request parsing along the same lines
+(malformed `Content-Length`, whitespace before a header colon, control
+characters in the path) and fixes ASGI and `gthread` behaviour this project
+does not use — the image runs the default sync workers. If a client in front of
+the app suddenly gets 400s after the update, that is where to look.
+
+**The image now runs on Python 3.15** instead of 3.14. The application code is
+unchanged and the test suite passes on 3.15 with the three bumps combined. Note
+that CI still runs the tests on Python 3.11 and only boots the 3.15 image for a
+smoke test, so the 3.15 test run was done by hand for this release. Running
+from source is unaffected: Python 3.9+ still works.
+
+If you deploy `ghcr.io/upellift99/mailcow-alias-generator:latest`, that tag is
+rebuilt on every push to `main` and already carries these changes; this release
+adds the `1.0.10` and `1.0` tags to the same content.
+
 ## [1.0.9](https://github.com/Upellift99/mailcow-alias-generator/compare/v1.0.8...v1.0.9) (2026-10-10)
 
 
